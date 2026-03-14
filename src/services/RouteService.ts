@@ -1,0 +1,67 @@
+/**
+ * This file was auto-generated. Please do not modify it directly.
+ */
+import { apiClient } from "../lib/apiClient.ts";
+
+export interface RouteDetailRequest {
+  locationName?: string;
+  locationOrder?: number;
+  durationAtLocation?: number;
+  routeDetailStatus?: "ACTIVE" | "INACTIVE" | "DELETED" | "DRAFT";
+}
+
+export interface RouteRequest {
+  routeName?: string;
+  routeStatus?: "ACTIVE" | "INACTIVE" | "DELETED" | "DRAFT";
+  tourId?: number;
+  routeDetails?: RouteDetailRequest[];
+}
+
+export interface RouteResponse {
+  routeId?: number;
+  tourId?: number;
+  routeName?: string;
+  routeDetails?: RouteDetailRequest[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+
+export const RouteService = {
+  /**
+   * GET /api/routes/{id}
+   */
+  getRouteById: async (pathParams: { id: number }, queryParams?: { routeStatus?: string }): Promise<RouteResponse> => {
+    const { data, error } = await apiClient.GET("/api/routes/{id}" as any, { params: { path: pathParams, query: queryParams } });
+    if (error) throw error;
+    return data as RouteResponse;
+  },
+
+  /**
+   * PUT /api/routes/{id}
+   */
+  updateRoute: async (pathParams: { id: number }, body: RouteRequest): Promise<RouteResponse> => {
+    const { data, error } = await apiClient.PUT("/api/routes/{id}" as any, { params: { path: pathParams }, body: body as any });
+    if (error) throw error;
+    return data as RouteResponse;
+  },
+
+  /**
+   * GET /api/routes
+   */
+  getAllRoutes: async (queryParams?: { routeStatus?: string }): Promise<RouteResponse[]> => {
+    const { data, error } = await apiClient.GET("/api/routes" as any, { params: { query: queryParams } });
+    if (error) throw error;
+    return data as RouteResponse[];
+  },
+
+  /**
+   * POST /api/routes
+   */
+  createRoute: async (body: RouteRequest): Promise<RouteResponse> => {
+    const { data, error } = await apiClient.POST("/api/routes" as any, { body: body as any });
+    if (error) throw error;
+    return data as RouteResponse;
+  },
+
+};

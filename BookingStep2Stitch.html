@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>River Luxe - Secure Checkout</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#f4c025",
+                        "primary-hover": "#dcb236",
+                        "background-light": "#f8f8f5",
+                        "background-dark": "#231e10",
+                        "surface-dark": "#342d18",
+                        "border-dark": "#493f22",
+                        "text-muted": "#cbbc90",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #231e10;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #493f22;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #f4c025;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display min-h-screen flex flex-col overflow-x-hidden text-slate-900 dark:text-slate-100">
+<!-- Header -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-border-dark px-6 lg:px-10 py-4 bg-white dark:bg-background-dark sticky top-0 z-50">
+<div class="flex items-center gap-4">
+<div class="size-8 text-primary">
+<span class="material-symbols-outlined text-4xl">sailing</span>
+</div>
+<h2 class="text-slate-900 dark:text-white text-xl font-bold leading-tight tracking-tight">River Luxe</h2>
+</div>
+<div class="hidden md:flex flex-1 justify-end gap-8 items-center">
+<nav class="flex items-center gap-8">
+<a class="text-slate-600 dark:text-text-muted hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors" href="#">Tours</a>
+<a class="text-slate-600 dark:text-text-muted hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors" href="#">Destinations</a>
+<a class="text-slate-600 dark:text-text-muted hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors" href="#">About Us</a>
+<a class="text-slate-600 dark:text-text-muted hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors" href="#">Contact</a>
+</nav>
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-full bg-surface-dark flex items-center justify-center text-text-muted">
+<span class="material-symbols-outlined">person</span>
+</div>
+</div>
+</div>
+<button class="md:hidden text-slate-900 dark:text-white">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</header>
+<main class="flex-grow flex flex-col items-center py-8 px-4 sm:px-6 lg:px-8">
+<div class="w-full max-w-6xl">
+<!-- Breadcrumbs -->
+<nav class="flex mb-8 text-sm font-medium text-text-muted">
+<ol class="flex items-center space-x-2">
+<li><a class="hover:text-primary transition-colors" href="#">Home</a></li>
+<li><span class="mx-2">/</span></li>
+<li><a class="hover:text-primary transition-colors" href="#">Select Tour</a></li>
+<li><span class="mx-2">/</span></li>
+<li class="text-primary">Payment Details</li>
+</ol>
+</nav>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+<!-- Left Column: Payment Form -->
+<div class="lg:col-span-7 xl:col-span-8 space-y-8">
+<div>
+<h1 class="text-3xl font-bold text-slate-900 dark:text-white mb-2">Secure Payment</h1>
+<p class="text-slate-600 dark:text-text-muted">Complete your booking securely. Your adventure awaits.</p>
+</div>
+<!-- Payment Methods Tabs -->
+<div class="bg-white dark:bg-surface-dark rounded-xl p-6 border border-slate-200 dark:border-border-dark shadow-sm">
+<div class="flex border-b border-slate-200 dark:border-border-dark gap-6 mb-8 overflow-x-auto">
+<button class="flex items-center gap-2 pb-4 border-b-2 border-primary text-primary px-2 whitespace-nowrap transition-all">
+<span class="material-symbols-outlined">credit_card</span>
+<span class="font-bold text-sm tracking-wide">Credit Card</span>
+</button>
+<button class="flex items-center gap-2 pb-4 border-b-2 border-transparent text-slate-500 dark:text-text-muted hover:text-slate-900 dark:hover:text-white px-2 whitespace-nowrap transition-all">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="font-bold text-sm tracking-wide">PayPal</span>
+</button>
+<button class="flex items-center gap-2 pb-4 border-b-2 border-transparent text-slate-500 dark:text-text-muted hover:text-slate-900 dark:hover:text-white px-2 whitespace-nowrap transition-all">
+<span class="material-symbols-outlined">smartphone</span>
+<span class="font-bold text-sm tracking-wide">Apple Pay</span>
+</button>
+</div>
+<!-- Card Form -->
+<form class="space-y-6">
+<div class="grid grid-cols-1 gap-6">
+<label class="block">
+<span class="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2 block">Card Number</span>
+<div class="relative">
+<input class="w-full bg-slate-50 dark:bg-background-dark border border-slate-300 dark:border-border-dark rounded-lg px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-text-muted focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" placeholder="0000 0000 0000 0000" type="text"/>
+<div class="absolute right-4 top-1/2 -translate-y-1/2 flex gap-2">
+<span class="material-symbols-outlined text-text-muted">credit_card</span>
+</div>
+</div>
+</label>
+<label class="block">
+<span class="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2 block">Card Holder Name</span>
+<input class="w-full bg-slate-50 dark:bg-background-dark border border-slate-300 dark:border-border-dark rounded-lg px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-text-muted focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" placeholder="Full Name as on Card" type="text"/>
+</label>
+<div class="grid grid-cols-2 gap-6">
+<label class="block">
+<span class="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2 block">Expiry Date</span>
+<input class="w-full bg-slate-50 dark:bg-background-dark border border-slate-300 dark:border-border-dark rounded-lg px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-text-muted focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" placeholder="MM / YY" type="text"/>
+</label>
+<label class="block">
+<span class="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2 block">CVV / CVC</span>
+<div class="relative">
+<input class="w-full bg-slate-50 dark:bg-background-dark border border-slate-300 dark:border-border-dark rounded-lg px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-text-muted focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" placeholder="123" type="text"/>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-text-muted text-lg cursor-help" title="3 digits on back of card">help</span>
+</div>
+</label>
+</div>
+</div>
+<div class="flex items-start gap-3 mt-6">
+<input class="mt-1 rounded border-slate-300 dark:border-border-dark bg-slate-50 dark:bg-background-dark text-primary focus:ring-primary" id="save-card" type="checkbox"/>
+<label class="text-sm text-slate-600 dark:text-text-muted" for="save-card">Save card details for future bookings. <a class="text-primary hover:underline" href="#">Read terms</a></label>
+</div>
+</form>
+</div>
+<!-- Billing Address Accordion (Optional Look) -->
+<div class="bg-white dark:bg-surface-dark rounded-xl border border-slate-200 dark:border-border-dark overflow-hidden">
+<button class="w-full flex items-center justify-between p-6 text-left">
+<div class="flex items-center gap-3">
+<div class="bg-slate-100 dark:bg-background-dark p-2 rounded-lg text-slate-500 dark:text-text-muted">
+<span class="material-symbols-outlined">location_on</span>
+</div>
+<div>
+<h3 class="font-bold text-slate-900 dark:text-white">Billing Address</h3>
+<p class="text-sm text-slate-500 dark:text-text-muted">Same as personal address</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-400">expand_more</span>
+</button>
+</div>
+</div>
+<!-- Right Column: Order Summary -->
+<div class="lg:col-span-5 xl:col-span-4">
+<div class="bg-white dark:bg-surface-dark rounded-xl border border-slate-200 dark:border-border-dark p-6 sticky top-24 shadow-lg shadow-black/5 dark:shadow-black/20">
+<h3 class="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+                            Order Summary
+                            <span class="material-symbols-outlined text-primary text-xl">receipt_long</span>
+</h3>
+<!-- Mini Tour Card -->
+<div class="flex gap-4 mb-6 pb-6 border-b border-slate-200 dark:border-border-dark">
+<div class="w-20 h-20 shrink-0 rounded-lg bg-slate-200 dark:bg-neutral-800 overflow-hidden relative">
+<!-- Placeholder for Tour Image -->
+<div class="absolute inset-0 bg-gradient-to-br from-slate-300 to-slate-400 dark:from-neutral-700 dark:to-neutral-800" data-alt="Abstract river landscape gradient"></div>
+</div>
+<div>
+<h4 class="font-bold text-slate-900 dark:text-white leading-tight mb-1">Danube Waltz</h4>
+<p class="text-xs text-text-muted mb-2">7 Days • Vienna to Budapest</p>
+<div class="flex items-center gap-1 text-xs text-slate-500 dark:text-text-muted">
+<span class="material-symbols-outlined text-[16px]">calendar_month</span>
+<span>Oct 12 - Oct 19, 2024</span>
+</div>
+</div>
+</div>
+<!-- Price Breakdown -->
+<div class="space-y-3 text-sm mb-6">
+<div class="flex justify-between text-slate-600 dark:text-slate-300">
+<span>2 Adults x $2,450</span>
+<span class="font-medium">$4,900.00</span>
+</div>
+<div class="flex justify-between text-slate-600 dark:text-slate-300">
+<span>Port Taxes &amp; Fees</span>
+<span class="font-medium">$340.00</span>
+</div>
+<div class="flex justify-between text-slate-600 dark:text-slate-300">
+<span>Travel Protection</span>
+<span class="font-medium">$190.00</span>
+</div>
+<div class="flex justify-between text-primary font-medium">
+<span>Promo Code (EARLYBIRD)</span>
+<span>-$200.00</span>
+</div>
+</div>
+<!-- Total -->
+<div class="pt-4 border-t border-slate-200 dark:border-border-dark flex justify-between items-end mb-8">
+<div>
+<p class="text-sm text-slate-500 dark:text-text-muted mb-1">Total Price (USD)</p>
+<p class="text-xs text-slate-400 dark:text-neutral-500">Includes all taxes</p>
+</div>
+<div class="text-3xl font-bold text-slate-900 dark:text-white">$5,230.00</div>
+</div>
+<!-- Pay Button -->
+<button class="w-full bg-primary hover:bg-primary-hover text-surface-dark font-bold text-lg py-4 px-6 rounded-lg transition-colors flex items-center justify-center gap-2 group shadow-lg shadow-primary/20">
+<span>Pay Now</span>
+<span class="material-symbols-outlined transition-transform group-hover:translate-x-1">arrow_forward</span>
+</button>
+<!-- Security Badge -->
+<div class="mt-6 flex flex-col items-center justify-center gap-2 text-center">
+<div class="flex items-center gap-2 text-slate-500 dark:text-text-muted text-xs font-medium bg-slate-100 dark:bg-black/20 px-3 py-1.5 rounded-full">
+<span class="material-symbols-outlined text-green-500 text-sm">lock</span>
+                                Secure SSL Encryption
+                            </div>
+<p class="text-[10px] text-slate-400 dark:text-neutral-500 mt-2 max-w-[200px]">Your personal data will be used to process your order and support your experience.</p>
+</div>
+</div>
+<!-- Help Box -->
+<div class="mt-6 bg-primary/10 border border-primary/20 rounded-xl p-4 flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-0.5">support_agent</span>
+<div>
+<h4 class="text-sm font-bold text-slate-900 dark:text-white mb-1">Need Help?</h4>
+<p class="text-xs text-slate-600 dark:text-text-muted">Call our booking experts 24/7 at <a class="text-primary hover:underline font-medium" href="#">+1 (800) 123-4567</a></p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer Simple -->
+<footer class="mt-auto border-t border-slate-200 dark:border-border-dark py-8 bg-white dark:bg-surface-dark">
+<div class="w-full max-w-6xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="text-slate-500 dark:text-text-muted text-sm">© 2024 River Luxe Tours. All rights reserved.</p>
+<div class="flex gap-6">
+<a class="text-slate-400 hover:text-primary dark:text-neutral-500 dark:hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">policy</span></a>
+<a class="text-slate-400 hover:text-primary dark:text-neutral-500 dark:hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">security</span></a>
+</div>
+</div>
+</footer>
+</body></html>
