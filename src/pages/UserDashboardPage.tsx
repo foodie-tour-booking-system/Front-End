@@ -1,8 +1,22 @@
 import { Navbar } from "@/components/blocks/Navbar";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
+import { AuthService } from "@/services/AuthService";
 
 export function UserDashboardPage() {
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await AuthService.logout();
+    } catch (error) {
+      console.error("Logout error", error);
+    } finally {
+      Cookies.remove("token");
+      navigate("/login");
+    }
+  };
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground font-sans transition-colors duration-200">
       <Navbar />
@@ -53,12 +67,12 @@ export function UserDashboardPage() {
             >
               <span className="font-medium">Help Center</span>
             </Link>
-            <Link
-              to="#"
-              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-secondary transition-colors mt-auto text-red-500"
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-secondary transition-colors mt-auto text-red-500 w-full text-left"
             >
               <span className="font-medium">Sign Out</span>
-            </Link>
+            </button>
           </nav>
 
           <div className="mt-auto pt-8">

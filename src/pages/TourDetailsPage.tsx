@@ -7,17 +7,57 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { TourService, type TourResponse } from "@/services/TourService";
+import { TourImageService, type TourImageResponse } from "@/services/TourImageService";
 
 export function TourDetailsPage() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [tour, setTour] = useState<TourResponse | null>(null);
+  const [images, setImages] = useState<TourImageResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (id) {
+      setLoading(true);
+      Promise.all([
+        TourService.getTourById({ id: Number(id) }),
+        TourImageService.getImages({ tourId: Number(id) }).catch(() => [])
+      ]).then(([tourData, imagesData]) => {
+        setTour(tourData);
+        setImages(imagesData);
+      }).catch(err => {
+         console.error(err);
+      }).finally(() => setLoading(false));
+    }
+  }, [id]);
+
+  if (loading || !tour) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+         <Navbar />
+         <div className="flex-1 flex items-center justify-center min-h-[50vh]">
+            <span className="text-muted-foreground animate-pulse p-8">Loading tour details...</span>
+         </div>
+         <Footer />
+      </div>
+    );
+  }
+
+  const primaryImage = images.find(img => img.isPrimary) || images[0];
+  const heroImage = primaryImage?.imageUrl || "https://lh3.googleusercontent.com/aida-public/AB6AXuDMbDjex6LvdbBnwfYAPaAZAGMczXuHOY96rYCCJ_s3xQWINYZAYMg3pFyUDYmxNOhkV0OP1x7iQmcOGs6keK6pad6pkd8GGRNnUg8Yn1HN_9pSxFv6jRGIMhVPLI1MkKxqY9fVtI7T05QbBYJ0SH3LAxQwLzEUcJ9rIqT5J9j6FvAT4TfnyaL1LDHq_itP9dvkktBkIBRNGlwIBTwCWZwHEMuXPu-twmKCh6eFBExLQQhMwXX5cLVIg1dDiq54dJvizGiZE2AIi_ge";
+
   return (
     <div className="min-h-screen bg-background text-foreground font-sans">
       <Navbar />
 
       <header className="relative w-full h-[400px] md:h-[500px]">
         <img
-          alt="Saigon River Sunset Speedboat"
+          alt={tour.tourName}
           className="w-full h-full object-cover"
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMbDjex6LvdbBnwfYAPaAZAGMczXuHOY96rYCCJ_s3xQWINYZAYMg3pFyUDYmxNOhkV0OP1x7iQmcOGs6keK6pad6pkd8GGRNnUg8Yn1HN_9pSxFv6jRGIMhVPLI1MkKxqY9fVtI7T05QbBYJ0SH3LAxQwLzEUcJ9rIqT5J9j6FvAT4TfnyaL1LDHq_itP9dvkktBkIBRNGlwIBTwCWZwHEMuXPu-twmKCh6eFBExLQQhMwXX5cLVIg1dDiq54dJvizGiZE2AIi_ge"
+          src={heroImage}
         />
         <div
           className="absolute inset-0 flex flex-col justify-end pb-12 px-4 md:px-12"
@@ -28,7 +68,7 @@ export function TourDetailsPage() {
         >
           <div className="container mx-auto">
             <h1 className="text-3xl md:text-5xl font-bold text-white uppercase font-display tracking-wide mb-2 drop-shadow-lg">
-              Saigon Night Food Tour By Luxury Speedboat
+              {tour.tourName}
             </h1>
             <div className="w-24 h-1 bg-primary mb-4"></div>
           </div>
@@ -50,16 +90,16 @@ export function TourDetailsPage() {
             </button>
           </div>
           <div className="uppercase tracking-wider">
-            <a className="hover:text-primary" href="/">
+            <Link className="hover:text-primary" to="/">
               Home
-            </a>{" "}
+            </Link>{" "}
             <span className="mx-1">&gt;</span>
-            <a className="hover:text-primary" href="/tours">
+            <span className="hover:text-primary cursor-pointer">
               Tours
-            </a>{" "}
+            </span>{" "}
             <span className="mx-1">&gt;</span>
             <span className="font-bold text-foreground">
-              Saigon Night Food Tour
+              {tour.tourName}
             </span>
           </div>
         </div>
@@ -114,44 +154,22 @@ export function TourDetailsPage() {
             <div className="flex flex-col md:flex-row gap-4 mb-6 text-sm font-bold">
               <div className="flex items-center">
                 <span className="mr-2 text-muted-foreground">
-                  Departure Time:
+                  Duration:
                 </span>
                 <span className="bg-primary text-primary-foreground px-3 py-1 rounded">
-                  5:00 PM
+                  {tour.duration} hours
                 </span>
               </div>
               <div className="flex items-center">
-                <span className="mr-2 text-muted-foreground">Finish Time:</span>
+                <span className="mr-2 text-muted-foreground">Type:</span>
                 <span className="bg-primary text-primary-foreground px-3 py-1 rounded">
-                  9:00 PM
+                  {tour.tourType}
                 </span>
               </div>
             </div>
-            <div className="space-y-4 text-sm leading-relaxed text-muted-foreground text-justify">
-              <p>
-                Experience the magic of Saigon at night with our exclusive Night
-                Food Tour by Luxury Speedboat. As the sun sets, escape the
-                bustling city center traffic and glide along the Saigon River,
-                witnessing the metropolis transform into a glittering spectacle
-                of lights. Our speedboats offer a unique vantage point to
-                appreciate the contrast between the modern skyline and
-                traditional life along the banks.
-              </p>
-              <p>
-                Your culinary journey begins as we dock at a local pier. You'll
-                be whisked away to explore the vibrant food scene of the city.
-                Unlike standard tours, we focus on authentic, high-quality
-                street food spots frequented by locals. Taste iconic dishes like
-                Banh Xeo (sizzling pancakes), Com Tam (broken rice), and fresh
-                spring rolls, all explained by our passionate guides.
-              </p>
-              <p>
-                The evening culminates in a serene riverside setting where you
-                can reflect on the flavors and sights of the night. Whether you
-                are a foodie or a culture enthusiast, this tour offers a perfect
-                blend of sightseeing, gastronomy, and luxury comfort.
-              </p>
-              <div className="flex items-start gap-2 bg-secondary/50 p-3 rounded border border-border">
+            <div className="space-y-4 text-sm leading-relaxed text-muted-foreground text-justify whitespace-pre-wrap">
+              {tour.tourDescription || "No description available."}
+              <div className="flex items-start gap-2 bg-secondary/50 p-3 rounded border border-border mt-4">
                 <p className="text-xs text-muted-foreground">
                   Please inform us of any dietary restrictions or allergies upon
                   booking so we can tailor the menu for you.
@@ -254,7 +272,9 @@ export function TourDetailsPage() {
                 <span className="font-bold text-sm uppercase text-muted-foreground">
                   Adult
                 </span>
-                <span className="font-bold text-primary">2,199,000 VND*</span>
+                <span className="font-bold text-primary">
+                  {tour.basePriceAdult?.toLocaleString() || "0"} VND*
+                </span>
               </div>
               <div className="flex justify-between items-center border-b border-border pb-2">
                 <div className="flex flex-col">
@@ -265,7 +285,9 @@ export function TourDetailsPage() {
                     4-12 years old
                   </span>
                 </div>
-                <span className="font-bold text-primary">1,599,000 VND*</span>
+                <span className="font-bold text-primary">
+                  {tour.basePriceChild?.toLocaleString() || "0"} VND*
+                </span>
               </div>
               <div className="flex justify-between items-center pb-2">
                 <div className="flex flex-col">
@@ -282,6 +304,7 @@ export function TourDetailsPage() {
               </div>
             </div>
             <Button
+              onClick={() => navigate(`/booking?tourId=${tour.tourId}`)}
               className="w-full hover:-translate-y-0.5 transition-transform"
               size="lg"
             >

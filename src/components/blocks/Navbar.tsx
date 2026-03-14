@@ -1,5 +1,39 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
+import { AuthService } from "@/services/AuthService";
+
 export function Navbar() {
+  const navigate = useNavigate();
+  const token = Cookies.get("token");
+  
+  let isAdmin = false;
+  let isUser = false;
+
+  if (token) {
+    try {
+      const decoded: any = jwtDecode(token);
+      const scopeArray = decoded.scope ? decoded.scope.split(" ") : [];
+      isAdmin = scopeArray.includes("ROLE_ADMIN");
+      isUser = scopeArray.includes("ROLE_USER") || !isAdmin; // fallback to true for users if they aren't admin but have valid token, assuming standard user role
+    } catch (e) {
+      // invalid token
+    }
+  }
+
+  const handleLogout = async () => {
+    try {
+      if (token) {
+        await AuthService.logout();
+      }
+    } catch (error) {
+      console.error("Logout error", error);
+    } finally {
+      Cookies.remove("token");
+      navigate("/login");
+    }
+  };
+
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur shadow-sm border-b border-border">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -33,30 +67,45 @@ export function Navbar() {
           >
             Book
           </Link>
-          <Link
-            to="/portal/customer"
-            className="text-sm font-medium text-foreground hover:text-primary transition-colors"
-          >
-            User
-          </Link>
-          <Link
-            to="/portal/admin"
-            className="text-sm font-medium text-foreground hover:text-primary transition-colors"
-          >
-            Admin
-          </Link>
-          <Link
-            to="/login"
-            className="text-sm font-medium text-foreground hover:text-primary transition-colors"
-          >
-            Login
-          </Link>
-          <Link
-            to="/register"
-            className="text-sm font-bold bg-[#f1c40f] hover:bg-[#d4ac0d] text-slate-900 px-4 py-2 rounded-lg transition-colors inline-block"
-          >
-            Sign Up
-          </Link>
+          {isUser && !isAdmin && (
+            <Link
+              to="/dashboard"
+              className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+            >
+              Dashboard
+            </Link>
+          )}
+          {isAdmin && (
+            <Link
+              to="/admin"
+              className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+            >
+              Admin Panel
+            </Link>
+          )}
+          {!token ? (
+            <>
+              <Link
+                to="/login"
+                className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+              >
+                Login
+              </Link>
+              <Link
+                to="/register"
+                className="text-sm font-bold bg-[#f1c40f] hover:bg-[#d4ac0d] text-slate-900 px-4 py-2 rounded-lg transition-colors inline-block"
+              >
+                Sign Up
+              </Link>
+            </>
+          ) : (
+            <button
+              onClick={handleLogout}
+              className="text-sm font-medium text-red-500 hover:text-red-600 transition-colors"
+            >
+              Logout
+            </button>
+          )}
         </nav>
         <button className="md:hidden text-2xl text-foreground">
           <svg
