@@ -104,8 +104,8 @@ export const TourService = {
   /**
    * GET /api/tour/{id}
    */
-  getTourById: async (queryParams?: { id: number }): Promise<TourResponse> => {
-    const { data, error } = await apiClient.GET("/api/tour/{id}" as any, { params: { query: queryParams } });
+  getTourById: async (pathParams: { id: number }): Promise<TourResponse> => {
+    const { data, error } = await apiClient.GET("/api/tour/{id}" as any, { params: { path: pathParams } });
     if (error) throw error;
     return data as TourResponse;
   },

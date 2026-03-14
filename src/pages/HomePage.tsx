@@ -1,9 +1,72 @@
+import { useEffect, useState } from "react";
 import { Footer } from "@/components/blocks/Footer";
 import { Navbar } from "@/components/blocks/Navbar";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
+import { TourService, type TourResponse } from "@/services/TourService";
+import { TourImageService } from "@/services/TourImageService";
+
+function FeaturedTourCard({ tour }: { tour: TourResponse }) {
+  const [imageUrl, setImageUrl] = useState<string>("https://lh3.googleusercontent.com/aida-public/AB6AXuBsOW9R_Wt7byyy5-b3m9n-UXfVF9gGkw0gFt0AnSlK1qIso-p_HnS_rdDNwyzhCDB9Y3xlW0gDn2q1uGCEMqohhs87PrUPm6aBh5oO1pFlOd7tc6R49YQnt8nbW7iihe-8k1wyA4bLOZH3TnV5yrqXFUUNM-84OjaArolPlX7764mrJWBuKEomT8jn38KJGwgUuLAUfhrKpVCBxB5yrPonn1hmWD5Hd3P222_EXsv8sbxT1y_Q25ERePuqUNzLES26-NRpdcQRS49v");
+
+  useEffect(() => {
+    if (tour.tourId) {
+      TourImageService.getImages({ tourId: tour.tourId })
+        .then(images => {
+          const primary = images.find(img => img.isPrimary) || images[0];
+          if (primary?.imageUrl) {
+            setImageUrl(primary.imageUrl);
+          }
+        })
+        .catch(console.error);
+    }
+  }, [tour.tourId]);
+
+  return (
+    <Link
+      to={`/tours/${tour.tourId}`}
+      className="min-w-[300px] md:min-w-[380px] snap-center bg-card rounded shadow-sm border border-border group cursor-pointer hover:-translate-y-2 transition-transform duration-300 flex flex-col"
+    >
+      <div className="relative h-56 overflow-hidden rounded-t">
+        {tour.tourStatus === "ACTIVE" && (
+          <span className="absolute top-4 left-4 bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded z-10">
+            AVAILABLE
+          </span>
+        )}
+        <img
+          alt={tour.tourName}
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          src={imageUrl}
+        />
+      </div>
+      <div className="p-6 flex-1 flex flex-col justify-between">
+        <h3 className="font-display font-bold text-lg mb-3 text-card-foreground line-clamp-2 uppercase">
+          {tour.tourName}
+        </h3>
+        <div className="flex items-center gap-4 text-sm text-muted-foreground mt-auto pt-2">
+          <span className="bg-primary/10 text-primary font-bold px-3 py-1 rounded">
+            {tour.basePriceAdult?.toLocaleString()} VND
+          </span>
+          <span className="flex items-center gap-1">{tour.duration} hours</span>
+        </div>
+      </div>
+    </Link>
+  );
+}
 
 export function HomePage() {
+  const [featuredTours, setFeaturedTours] = useState<TourResponse[]>([]);
+
+  useEffect(() => {
+    TourService.getAllTours()
+      .then(tours => {
+        // Just take the first 6 active tours for the homepage
+        const activeTours = tours.filter(t => t.tourStatus === 'ACTIVE').slice(0, 6);
+        setFeaturedTours(activeTours);
+      })
+      .catch(console.error);
+  }, []);
+
   return (
     <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-white">
       <Navbar />
@@ -118,83 +181,15 @@ export function HomePage() {
               className="flex overflow-x-auto gap-6 pb-8 snap-x"
               style={{ scrollbarWidth: "none" }}
             >
-              {/* Card 1 */}
-              <Link
-                to="/tours/1"
-                className="min-w-[300px] md:min-w-[380px] snap-center bg-card rounded shadow-sm border border-border group cursor-pointer hover:-translate-y-2 transition-transform duration-300"
-              >
-                <div className="relative h-56 overflow-hidden rounded-t">
-                  <span className="absolute top-4 left-4 bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded z-10">
-                    BEST SELLER
-                  </span>
-                  <img
-                    alt="Cu Chi Tunnels Tour"
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBsOW9R_Wt7byyy5-b3m9n-UXfVF9gGkw0gFt0AnSlK1qIso-p_HnS_rdDNwyzhCDB9Y3xlW0gDn2q1uGCEMqohhs87PrUPm6aBh5oO1pFlOd7tc6R49YQnt8nbW7iihe-8k1wyA4bLOZH3TnV5yrqXFUUNM-84OjaArolPlX7764mrJWBuKEomT8jn38KJGwgUuLAUfhrKpVCBxB5yrPonn1hmWD5Hd3P222_EXsv8sbxT1y_Q25ERePuqUNzLES26-NRpdcQRS49v"
-                  />
+              {featuredTours.length > 0 ? (
+                featuredTours.map(tour => (
+                  <FeaturedTourCard key={tour.tourId} tour={tour} />
+                ))
+              ) : (
+                <div className="w-full text-center py-12 text-muted-foreground bg-card rounded border border-border border-dashed h-56 flex items-center justify-center">
+                  Loading amazing experiences...
                 </div>
-                <div className="p-6">
-                  <h3 className="font-display font-bold text-lg mb-3 text-card-foreground h-14">
-                    CU CHI TUNNELS TOUR BY SPEEDBOAT
-                  </h3>
-                  <div className="flex items-center gap-4 mb-4 text-sm text-muted-foreground">
-                    <span className="bg-primary/10 text-primary font-bold px-3 py-1 rounded">
-                      2,199,000 VND
-                    </span>
-                    <span className="flex items-center gap-1">6 hours</span>
-                  </div>
-                </div>
-              </Link>
-
-              {/* Card 2 */}
-              <Link
-                to="/tours/2"
-                className="min-w-[300px] md:min-w-[380px] snap-center bg-card rounded shadow-sm border border-border group cursor-pointer hover:-translate-y-2 transition-transform duration-300"
-              >
-                <div className="relative h-56 overflow-hidden rounded-t">
-                  <img
-                    alt="Mekong Delta Tour"
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPdBvLNMGBOlZP6sScJhCeuwmcJ0gVUG1tI3myjukijbe9ei9xsfOwWI_pGx1VGpCQFWQyobRfQrNK7uro8H4MJE8FJfhVf71BGjRKI9u7wIDqJ5aWkz3WU_a2sl_M9X7cgXfROCIulp_qDaPLlWYEC4qYimjEaQeRfPuYN8xeY_1AdXigWxrqAtsoSiThAjEt3-CQwZN_unrGAnKJn23_7XoyAaPWajlGRi2m3_o_KVbNyYe5IGNf7BxL4-K1ppmn4NSJ3TjbPRH6"
-                  />
-                </div>
-                <div className="p-6">
-                  <h3 className="font-display font-bold text-lg mb-3 text-card-foreground h-14">
-                    MEKONG DELTA DAY TOUR BY SPEEDBOAT
-                  </h3>
-                  <div className="flex items-center gap-4 mb-4 text-sm text-muted-foreground">
-                    <span className="bg-primary/10 text-primary font-bold px-3 py-1 rounded">
-                      2,899,000 VND
-                    </span>
-                    <span className="flex items-center gap-1">8 hours</span>
-                  </div>
-                </div>
-              </Link>
-
-              {/* Card 3 */}
-              <Link
-                to="/tours/3"
-                className="min-w-[300px] md:min-w-[380px] snap-center bg-card rounded shadow-sm border border-border group cursor-pointer hover:-translate-y-2 transition-transform duration-300"
-              >
-                <div className="relative h-56 overflow-hidden rounded-t">
-                  <img
-                    alt="Cu Chi & Mekong Combo"
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWIuYcCsqbSELJJOoBfu7wI_XeWzRW_qqiWe51V-XSpwc3qFktxKpyU4HWmcSVLRRjnLIrClshvyMi_IMgJNgrqBq4rXKoB4-LuX32K9e1FeMUTxBZjYlLtjJVTxnRyeO0jUj4LgPjE2L4PW4amlwAx8_V9lku4ZsfwG4ctY2LFeuxvYNsBigqwN5BLjgmIoySJMeB-fFeTl5dQUoRe_Q6O7hgoYP8Qxw3pW46TgHA0WUPcNyVMXwUik4VXxbAsZcSpldsFR-jxnUn"
-                  />
-                </div>
-                <div className="p-6">
-                  <h3 className="font-display font-bold text-lg mb-3 text-card-foreground h-14">
-                    CU CHI TUNNELS & MEKONG DELTA FULL DAY
-                  </h3>
-                  <div className="flex items-center gap-4 mb-4 text-sm text-muted-foreground">
-                    <span className="bg-primary/10 text-primary font-bold px-3 py-1 rounded">
-                      5,099,000 VND
-                    </span>
-                    <span className="flex items-center gap-1">10 hours</span>
-                  </div>
-                </div>
-              </Link>
+              )}
             </div>
           </div>
         </div>

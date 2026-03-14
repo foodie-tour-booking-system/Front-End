@@ -19,22 +19,17 @@ function App() {
         <Route path="/tours/:id" element={<TourDetailsPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/booking" element={<BookingPage />} />
-        
+
         {/* Auth Routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
-        
-        {/* Portal Routes */}
-        <Route path="/portal/customer" element={<ProtectedRoute><UserDashboardPage /></ProtectedRoute>} />
-        <Route path="/portal/admin" element={<ProtectedRoute requiredRole="ADMIN"><AdminDashboardPage /></ProtectedRoute>} />
 
-        {/* Legacy Redirects */}
-        <Route path="/dashboard" element={<Navigate to="/portal/customer" replace />} />
-        <Route path="/admin" element={<Navigate to="/portal/admin" replace />} />
-        
+        {/* Portal Routes */}
+        <Route path="/dashboard" element={<ProtectedRoute><UserDashboardPage /></ProtectedRoute>} />
+        <Route path="/admin" element={<ProtectedRoute requiredRole="ADMIN"><AdminDashboardPage /></ProtectedRoute>} />
+
         {/* Error Fallbacks */}
-        <Route path="/403" element={<Navigate to="/" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

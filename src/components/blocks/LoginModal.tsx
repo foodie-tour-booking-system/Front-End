@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { X, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { X, Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
+import { AuthService } from "@/services/AuthService";
+import Cookies from "js-cookie";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -9,6 +11,35 @@ interface LoginModalProps {
 
 export function LoginModal({ isOpen, onClose, onNavigateToSignup }: LoginModalProps) {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
+
+    try {
+      const response = await AuthService.login({
+        input: email,
+        password: password
+      });
+
+      if (response.token) {
+        Cookies.set("token", response.token, { expires: 1 });
+        onClose();
+        window.location.reload(); // Reload to update auth state across the app
+      } else {
+        setError("Login failed. No token received.");
+      }
+    } catch (err: any) {
+      setError(err?.message || "Invalid email or password");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -48,8 +79,15 @@ export function LoginModal({ isOpen, onClose, onNavigateToSignup }: LoginModalPr
 
         <div className="px-8 pb-8 pt-2">
           <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-6 text-center">Welcome Back</h2>
-          
-          <form className="space-y-5">
+
+          <form className="space-y-5" onSubmit={handleLogin}>
+            {error && (
+              <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm font-medium border border-red-200 dark:border-red-800 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                {error}
+              </div>
+            )}
+            
             <div className="space-y-1.5">
               <label className="block text-sm font-medium text-slate-700 dark:text-gray-300" htmlFor="email">
                 Email Address
@@ -61,8 +99,12 @@ export function LoginModal({ isOpen, onClose, onNavigateToSignup }: LoginModalPr
                 <input
                   id="email"
                   type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com"
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-700 rounded-lg leading-5 bg-gray-50 dark:bg-black/20 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm text-slate-900 dark:text-white transition-colors"
+                  required
+                  disabled={isLoading}
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-700 rounded-lg leading-5 bg-gray-50 dark:bg-black/20 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm text-slate-900 dark:text-white transition-colors disabled:opacity-50"
                 />
               </div>
             </div>
@@ -83,8 +125,12 @@ export function LoginModal({ isOpen, onClose, onNavigateToSignup }: LoginModalPr
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  className="block w-full pl-10 pr-10 py-3 border border-gray-200 dark:border-gray-700 rounded-lg leading-5 bg-gray-50 dark:bg-black/20 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm text-slate-900 dark:text-white transition-colors"
+                  required
+                  disabled={isLoading}
+                  className="block w-full pl-10 pr-10 py-3 border border-gray-200 dark:border-gray-700 rounded-lg leading-5 bg-gray-50 dark:bg-black/20 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm text-slate-900 dark:text-white transition-colors disabled:opacity-50"
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                   <button
@@ -100,10 +146,17 @@ export function LoginModal({ isOpen, onClose, onNavigateToSignup }: LoginModalPr
 
             <button
               type="submit"
-              onClick={(e) => e.preventDefault()}
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-[#f1c40f] hover:bg-[#d4ac0d] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f1c40f] transition-all uppercase tracking-wide mt-2"
+              disabled={isLoading}
+              className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-[#f1c40f] hover:bg-[#d4ac0d] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f1c40f] transition-all uppercase tracking-wide mt-2 disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              Log In
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Logging In...
+                </>
+              ) : (
+                "Log In"
+              )}
             </button>
           </form>
 
