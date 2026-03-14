@@ -1,21 +1,41 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HomePage } from "@/pages/HomePage";
 import { TourDetailsPage } from "@/pages/TourDetailsPage";
 import { AboutPage } from "@/pages/AboutPage";
 import { BookingPage } from "@/pages/BookingPage";
 import { UserDashboardPage } from "@/pages/UserDashboardPage";
 import { AdminDashboardPage } from "@/pages/AdminDashboardPage";
+import { ResetPasswordPage } from "@/pages/ResetPasswordPage";
+import { LoginPage } from "@/pages/LoginPage";
+import { RegisterPage } from "@/pages/RegisterPage";
+import { ProtectedRoute } from "./components/routes/ProtectedRoute";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<HomePage />} />
         <Route path="/tours/:id" element={<TourDetailsPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/booking" element={<BookingPage />} />
-        <Route path="/dashboard" element={<UserDashboardPage />} />
-        <Route path="/admin" element={<AdminDashboardPage />} />
+        
+        {/* Auth Routes */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        
+        {/* Portal Routes */}
+        <Route path="/portal/customer" element={<ProtectedRoute><UserDashboardPage /></ProtectedRoute>} />
+        <Route path="/portal/admin" element={<ProtectedRoute requiredRole="ADMIN"><AdminDashboardPage /></ProtectedRoute>} />
+
+        {/* Legacy Redirects */}
+        <Route path="/dashboard" element={<Navigate to="/portal/customer" replace />} />
+        <Route path="/admin" element={<Navigate to="/portal/admin" replace />} />
+        
+        {/* Error Fallbacks */}
+        <Route path="/403" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

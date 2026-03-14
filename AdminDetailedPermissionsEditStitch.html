@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Admin: Detailed Permissions Edit View</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#f4c025",
+                        "background-light": "#f8f8f5",
+                        "background-dark": "#221e10",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen flex flex-col overflow-x-hidden">
+<div class="relative flex h-full w-full flex-col group/design-root">
+<div class="layout-container flex h-full grow flex-col">
+<!-- Header -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-[#493f22] bg-white dark:bg-[#2e291d] px-10 py-3 sticky top-0 z-50">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-4 text-slate-900 dark:text-white">
+<div class="size-8 flex items-center justify-center rounded-lg bg-primary/20 text-primary">
+<span class="material-symbols-outlined">admin_panel_settings</span>
+</div>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Admin Console</h2>
+</div>
+<div class="flex items-center gap-9 hidden md:flex">
+<a class="text-slate-600 dark:text-[#cbbc90] hover:text-primary dark:hover:text-white text-sm font-medium leading-normal transition-colors" href="#">Dashboard</a>
+<a class="text-slate-900 dark:text-white text-sm font-medium leading-normal border-b-2 border-primary" href="#">Employees</a>
+<a class="text-slate-600 dark:text-[#cbbc90] hover:text-primary dark:hover:text-white text-sm font-medium leading-normal transition-colors" href="#">Settings</a>
+</div>
+</div>
+<div class="flex flex-1 justify-end gap-8">
+<label class="flex flex-col min-w-40 !h-10 max-w-64 hidden sm:flex">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full ring-1 ring-slate-200 dark:ring-[#493f22] bg-slate-50 dark:bg-[#493f22] focus-within:ring-2 focus-within:ring-primary">
+<div class="text-slate-500 dark:text-[#cbbc90] flex border-none items-center justify-center pl-4 rounded-l-lg border-r-0">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 dark:text-white focus:outline-0 focus:ring-0 border-none bg-transparent focus:border-none h-full placeholder:text-slate-400 dark:placeholder:text-[#cbbc90] px-4 rounded-l-none border-l-0 pl-2 text-sm font-normal leading-normal" placeholder="Search" value=""/>
+</div>
+</label>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-slate-200 dark:border-[#493f22]" data-alt="Admin user profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAhhqwGFogdJILckcV3UBL7HmHI5wdODJOokGDk7FfX7YpXFo7bPYoy8yy3Aq7Jgqnf55XG5rz0_1P0_0XlINOHtajpexTX60i9uu9s-Mhp0PgKlgjQDVQ1GvLN2BMMaxk5t8k8lMwXkZUAkaVI5pr7JXLe4M4UQoKr8uTH75WIjnrX-0TdZeSkjlkG1wSfD2MNA3N_osH8aE1tf8knDeopTXXCMY_vFAtq9OCj2otINH2NCKhD-4BiwIROgLf7JFFAeBmA_bIyCHK-");'></div>
+</div>
+</header>
+<!-- Main Content Area -->
+<div class="flex flex-1 justify-center py-5 px-4 md:px-10 lg:px-40">
+<div class="layout-content-container flex flex-col max-w-[960px] flex-1 w-full">
+<!-- Breadcrumb / Back Navigation -->
+<div class="flex items-center gap-2 mb-6 text-sm text-slate-500 dark:text-[#cbbc90]">
+<a class="hover:text-primary transition-colors flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-[16px]">arrow_back</span>
+                        Back to Directory
+                    </a>
+</div>
+<!-- Page Header -->
+<div class="flex flex-wrap justify-between items-end gap-4 pb-6 border-b border-slate-200 dark:border-[#493f22]">
+<div class="flex flex-col gap-2">
+<h1 class="text-slate-900 dark:text-white text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">Permissions: Sarah Jenkins</h1>
+<p class="text-slate-500 dark:text-[#cbbc90] text-base font-normal leading-normal max-w-2xl">
+                            Configure granular access controls and scope limitations for this employee account. Changes are logged for audit purposes.
+                        </p>
+</div>
+<div class="flex items-center gap-2">
+<span class="inline-flex items-center rounded-full bg-green-500/10 px-2 py-1 text-xs font-medium text-green-500 ring-1 ring-inset ring-green-500/20">Active Employee</span>
+<span class="inline-flex items-center rounded-full bg-blue-500/10 px-2 py-1 text-xs font-medium text-blue-500 ring-1 ring-inset ring-blue-500/20">Operations Dept</span>
+</div>
+</div>
+<!-- Permissions List -->
+<div class="mt-8 flex flex-col gap-4">
+<!-- Permission Item 1 -->
+<label class="group relative flex items-start gap-4 p-5 rounded-xl border border-slate-200 dark:border-[#493f22] bg-white dark:bg-[#2e291d] hover:border-primary/50 dark:hover:border-primary/50 transition-all cursor-pointer shadow-sm">
+<div class="flex h-6 items-center">
+<input checked="" class="h-5 w-5 rounded border-slate-300 dark:border-[#685a31] bg-slate-50 dark:bg-transparent text-primary focus:ring-primary focus:ring-offset-background-light dark:focus:ring-offset-background-dark transition duration-150 ease-in-out cursor-pointer" type="checkbox"/>
+</div>
+<div class="flex flex-col gap-1 flex-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">tour</span>
+<span class="text-slate-900 dark:text-white text-base font-bold">Manage Tours</span>
+</div>
+<p class="text-slate-500 dark:text-[#cbbc90] text-sm leading-relaxed">
+                                Grants full capability to create new tour listings, edit existing details including pricing and itineraries, and archive obsolete tours.
+                            </p>
+</div>
+</label>
+<!-- Permission Item 2 -->
+<label class="group relative flex items-start gap-4 p-5 rounded-xl border border-slate-200 dark:border-[#493f22] bg-white dark:bg-[#2e291d] hover:border-primary/50 dark:hover:border-primary/50 transition-all cursor-pointer shadow-sm">
+<div class="flex h-6 items-center">
+<input checked="" class="h-5 w-5 rounded border-slate-300 dark:border-[#685a31] bg-slate-50 dark:bg-transparent text-primary focus:ring-primary focus:ring-offset-background-light dark:focus:ring-offset-background-dark transition duration-150 ease-in-out cursor-pointer" type="checkbox"/>
+</div>
+<div class="flex flex-col gap-1 flex-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">calendar_month</span>
+<span class="text-slate-900 dark:text-white text-base font-bold">Manage Bookings</span>
+</div>
+<p class="text-slate-500 dark:text-[#cbbc90] text-sm leading-relaxed">
+                                Allows viewing customer bookings, modifying dates, processing cancellations, and issuing refunds up to $500.
+                            </p>
+</div>
+</label>
+<!-- Permission Item 3 -->
+<label class="group relative flex items-start gap-4 p-5 rounded-xl border border-slate-200 dark:border-[#493f22] bg-white dark:bg-[#2e291d] hover:border-primary/50 dark:hover:border-primary/50 transition-all cursor-pointer shadow-sm">
+<div class="flex h-6 items-center">
+<input class="h-5 w-5 rounded border-slate-300 dark:border-[#685a31] bg-slate-50 dark:bg-transparent text-primary focus:ring-primary focus:ring-offset-background-light dark:focus:ring-offset-background-dark transition duration-150 ease-in-out cursor-pointer" type="checkbox"/>
+</div>
+<div class="flex flex-col gap-1 flex-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-500 text-[20px] group-hover:text-primary transition-colors">analytics</span>
+<span class="text-slate-900 dark:text-white text-base font-bold">View Analytics</span>
+</div>
+<p class="text-slate-500 dark:text-[#cbbc90] text-sm leading-relaxed">
+                                Read-only access to dashboard sales reports, traffic data, and conversion metrics. Cannot export data.
+                            </p>
+</div>
+</label>
+<!-- Permission Item 4 -->
+<label class="group relative flex items-start gap-4 p-5 rounded-xl border border-slate-200 dark:border-[#493f22] bg-white dark:bg-[#2e291d] hover:border-primary/50 dark:hover:border-primary/50 transition-all cursor-pointer shadow-sm">
+<div class="flex h-6 items-center">
+<input checked="" class="h-5 w-5 rounded border-slate-300 dark:border-[#685a31] bg-slate-50 dark:bg-transparent text-primary focus:ring-primary focus:ring-offset-background-light dark:focus:ring-offset-background-dark transition duration-150 ease-in-out cursor-pointer" type="checkbox"/>
+</div>
+<div class="flex flex-col gap-1 flex-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">support_agent</span>
+<span class="text-slate-900 dark:text-white text-base font-bold">Customer Support</span>
+</div>
+<p class="text-slate-500 dark:text-[#cbbc90] text-sm leading-relaxed">
+                                Access to live chat logs, ticket resolution tools, and ability to respond to customer inquiries directly.
+                            </p>
+</div>
+</label>
+<!-- Permission Item 5 -->
+<label class="group relative flex items-start gap-4 p-5 rounded-xl border border-slate-200 dark:border-[#493f22] bg-white dark:bg-[#2e291d] hover:border-primary/50 dark:hover:border-primary/50 transition-all cursor-pointer shadow-sm opacity-75">
+<div class="flex h-6 items-center">
+<input class="h-5 w-5 rounded border-slate-300 dark:border-[#685a31] bg-slate-100 dark:bg-[#3a3424] text-slate-400 cursor-not-allowed" disabled="" type="checkbox"/>
+</div>
+<div class="flex flex-col gap-1 flex-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-600 text-[20px]">settings</span>
+<span class="text-slate-500 dark:text-slate-400 text-base font-bold">System Settings</span>
+<span class="ml-auto text-[10px] uppercase tracking-wider font-bold text-slate-400 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded">Admin Only</span>
+</div>
+<p class="text-slate-400 dark:text-slate-600 text-sm leading-relaxed">
+                                Configure global platform preferences, payment gateways, and API integrations. Requires Super Admin role.
+                            </p>
+</div>
+</label>
+</div>
+<!-- Footer Actions -->
+<div class="flex flex-col sm:flex-row justify-between items-center gap-4 mt-10 pt-6 border-t border-slate-200 dark:border-[#493f22]">
+<div class="text-sm text-slate-500 dark:text-[#cbbc90]">
+                        Last updated by <span class="font-medium text-slate-900 dark:text-white">Admin User</span> on Oct 24, 2023
+                    </div>
+<div class="flex gap-4 w-full sm:w-auto">
+<button class="flex-1 sm:flex-none cursor-pointer items-center justify-center rounded-lg h-12 px-6 border border-slate-300 dark:border-[#493f22] text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-[#3a3424] text-base font-medium transition-colors">
+                            Cancel
+                        </button>
+<button class="flex-1 sm:flex-none cursor-pointer items-center justify-center rounded-lg h-12 px-8 bg-primary hover:bg-primary/90 text-slate-900 text-base font-bold leading-normal tracking-[0.015em] shadow-lg shadow-primary/20 transition-all">
+                            Save Changes
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

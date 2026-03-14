@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-
 export function Navbar() {
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur shadow-sm border-b border-border">
@@ -35,16 +34,28 @@ export function Navbar() {
             Book
           </Link>
           <Link
-            to="/dashboard"
+            to="/portal/customer"
             className="text-sm font-medium text-foreground hover:text-primary transition-colors"
           >
             User
           </Link>
           <Link
-            to="/admin"
+            to="/portal/admin"
             className="text-sm font-medium text-foreground hover:text-primary transition-colors"
           >
             Admin
+          </Link>
+          <Link
+            to="/login"
+            className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+          >
+            Login
+          </Link>
+          <Link
+            to="/register"
+            className="text-sm font-bold bg-[#f1c40f] hover:bg-[#d4ac0d] text-slate-900 px-4 py-2 rounded-lg transition-colors inline-block"
+          >
+            Sign Up
           </Link>
         </nav>
         <button className="md:hidden text-2xl text-foreground">
@@ -66,6 +77,6 @@ export function Navbar() {
           </svg>
         </button>
       </div>
-    </nav>
+</nav>
   );
 }
