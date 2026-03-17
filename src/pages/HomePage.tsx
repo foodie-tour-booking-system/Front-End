@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Footer } from "@/components/blocks/Footer";
 import { Navbar } from "@/components/blocks/Navbar";
 import { Input } from "@/components/ui/input";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { TourService, type TourResponse } from "@/services/TourService";
 import { TourImageService } from "@/services/TourImageService";
 
@@ -56,8 +56,16 @@ function FeaturedTourCard({ tour }: { tour: TourResponse }) {
 
 export function HomePage() {
   const [featuredTours, setFeaturedTours] = useState<TourResponse[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
+    // Check if we back from payment (VNPay params in URL)
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("vnp_ResponseCode") || params.get("vnp_TransactionStatus")) {
+      navigate("/dashboard");
+      return;
+    }
+
     TourService.getAllTours()
       .then(tours => {
         // Just take the first 6 active tours for the homepage
@@ -65,7 +73,7 @@ export function HomePage() {
         setFeaturedTours(activeTours);
       })
       .catch(console.error);
-  }, []);
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-white">
@@ -191,6 +199,30 @@ export function HomePage() {
                 </div>
               )}
             </div>
+          </div>
+
+          <div className="mt-8 text-center">
+            <Link
+              to="/tours"
+              className="inline-flex items-center gap-2 text-sm font-bold bg-primary text-primary-foreground px-6 py-3 rounded hover:bg-primary/90 transition-colors uppercase"
+            >
+              Explore All Tours
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="lucide lucide-arrow-right"
+              >
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" />
+              </svg>
+            </Link>
           </div>
         </div>
       </section>

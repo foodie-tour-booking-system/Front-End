@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { CheckCircle2, Calendar, MapPin, CreditCard, Loader2, AlertTriangle } from "lucide-react";
 import { BookingService, type BookingResponse } from "@/services/BookingService";
 
@@ -30,6 +30,8 @@ export function BookingStep3({ bookingCode }: BookingStep3Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     if (!bookingCode) return;
     setLoading(true);
@@ -37,7 +39,14 @@ export function BookingStep3({ bookingCode }: BookingStep3Props) {
       .then(setBooking)
       .catch((err) => setError(err?.message ?? "Could not load booking details."))
       .finally(() => setLoading(false));
-  }, [bookingCode]);
+
+    // Redirect to dashboard after 8 seconds
+    const timer = setTimeout(() => {
+      navigate("/dashboard");
+    }, 8000);
+
+    return () => clearTimeout(timer);
+  }, [bookingCode, navigate]);
 
   if (loading) {
     return (
@@ -63,6 +72,9 @@ export function BookingStep3({ bookingCode }: BookingStep3Props) {
           <p className="text-muted-foreground text-base max-w-md">
             Your booking has been received. A confirmation has been sent to{" "}
             <span className="text-primary font-semibold">your email</span>.
+          </p>
+          <p className="text-sm text-muted-foreground mt-4 italic">
+            Redirecting to your booking history in 8 seconds...
           </p>
         </div>
       </div>
@@ -109,7 +121,7 @@ export function BookingStep3({ bookingCode }: BookingStep3Props) {
             </div>
             <div>
               <p className="text-xs text-muted-foreground font-medium mb-0.5">Departure</p>
-              <p className="text-foreground font-semibold text-sm">{formatDate(booking?.departureTime)}</p>
+              <p className="text-foreground font-semibold text-sm">{formatDate(booking?.date)}</p>
               <p className="text-muted-foreground text-xs mt-0.5">Please arrive 15 mins early</p>
             </div>
           </div>

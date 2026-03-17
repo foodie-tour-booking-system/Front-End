@@ -8,7 +8,7 @@ export interface BookingCreateRequest {
   customerName?: string;
   email?: string;
   phone?: string;
-  dateTime?: string;
+  date?: string;
   adultCount?: number;
   childrenCount?: number;
   pickupLocation?: string;
@@ -28,7 +28,7 @@ export interface BookingResponse {
   totalPrice?: number;
   pickupLocation?: string;
   bookingStatus?: "PENDING" | "COMPLETED" | "CANCELLED";
-  departureTime?: string;
+  date?: string;
 }
 
 export interface ProcessRelocateRequest {
@@ -121,6 +121,15 @@ export const BookingService = {
     const { data, error } = await apiClient.GET("/api/booking/relocate/all-request" as any);
     if (error) throw error;
     return data as RelocateBookingResponse[];
+  },
+
+  /**
+   * GET /api/booking
+   */
+  getAllBookings: async (): Promise<BookingResponse[]> => {
+    const { data, error } = await apiClient.GET("/api/booking/all" as any);
+    if (error) throw error;
+    return data as BookingResponse[];
   },
 
 };

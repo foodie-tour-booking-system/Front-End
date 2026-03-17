@@ -49,6 +49,7 @@ export function BookingStep2({ tour, form, onUpdateForm, onBack, onNext }: Booki
       // 1. Create booking
       const booking = await BookingService.createBooking({
         scheduleId: form.scheduleId,
+        date: form.date,
         customerName: form.customerName,
         email: form.email,
         phone: form.phone,
@@ -58,6 +59,17 @@ export function BookingStep2({ tour, form, onUpdateForm, onBack, onNext }: Booki
         customerNote: form.customerNote,
         paymentMethod: form.paymentMethod,
       });
+
+      // Save booking code to local history
+      try {
+        const history = JSON.parse(localStorage.getItem("booking_history") || "[]");
+        if (!history.includes(booking.bookingCode)) {
+          history.push(booking.bookingCode);
+          localStorage.setItem("booking_history", JSON.stringify(history));
+        }
+      } catch (e) {
+        console.error("Failed to save booking history", e);
+      }
 
       if (!booking.bookingId) throw new Error("Booking creation failed – no booking ID returned.");
 
@@ -70,9 +82,10 @@ export function BookingStep2({ tour, form, onUpdateForm, onBack, onNext }: Booki
         // Payment URL generation may fail in dev – still continue to confirmation
       }
 
-      // 3. If we have a URL, open it; go to confirmation with bookingCode
+      // 3. If we have a URL, redirect to it; otherwise go to confirmation
       if (url) {
-        window.open(url, "_blank", "noopener");
+        window.location.href = url;
+        return; // Stop execution here as we are redirecting
       }
 
       onNext(booking.bookingCode ?? "");

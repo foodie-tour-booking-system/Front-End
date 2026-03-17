@@ -103,7 +103,10 @@ export function BookingStep1({ tourId, tour, form, onUpdateForm, onNext }: Booki
                 return (
                   <button
                     key={sch.scheduleId}
-                    onClick={() => onUpdateForm({ scheduleId: sch.scheduleId! })}
+                    onClick={() => onUpdateForm({ 
+                      scheduleId: sch.scheduleId!,
+                      date: sch.departureAt ? sch.departureAt.split('T')[0] : ""
+                    })}
                     className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
                       isSelected
                         ? "border-primary bg-primary/10"

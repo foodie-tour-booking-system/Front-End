@@ -8,14 +8,12 @@ export function Navbar() {
   const token = Cookies.get("token");
   
   let isAdmin = false;
-  let isUser = false;
 
   if (token) {
     try {
       const decoded: any = jwtDecode(token);
       const scopeArray = decoded.scope ? decoded.scope.split(" ") : [];
       isAdmin = scopeArray.includes("ROLE_ADMIN");
-      isUser = scopeArray.includes("ROLE_USER") || !isAdmin; // fallback to true for users if they aren't admin but have valid token, assuming standard user role
     } catch (e) {
       // invalid token
     }
@@ -50,7 +48,7 @@ export function Navbar() {
             Home
           </Link>
           <Link
-            to="/tours/1"
+            to="/tours"
             className="text-sm font-medium text-foreground hover:text-primary transition-colors"
           >
             Tours
@@ -62,19 +60,11 @@ export function Navbar() {
             About Us
           </Link>
           <Link
-            to="/booking"
+            to="/dashboard"
             className="text-sm font-medium text-foreground hover:text-primary transition-colors"
           >
-            Book
+            Booking
           </Link>
-          {isUser && !isAdmin && (
-            <Link
-              to="/dashboard"
-              className="text-sm font-medium text-foreground hover:text-primary transition-colors"
-            >
-              Dashboard
-            </Link>
-          )}
           {isAdmin && (
             <Link
               to="/admin"
