@@ -5,6 +5,7 @@ import { AboutPage } from "@/pages/AboutPage";
 import { BookingPage } from "@/pages/BookingPage";
 import { UserDashboardPage } from "@/pages/UserDashboardPage";
 import { AdminDashboardPage } from "@/pages/AdminDashboardPage";
+import { EmployeeDashboardPage } from "@/pages/EmployeeDashboardPage";
 import { ResetPasswordPage } from "@/pages/ResetPasswordPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { RegisterPage } from "@/pages/RegisterPage";
@@ -28,6 +29,7 @@ function App() {
         {/* Portal Routes */}
         <Route path="/dashboard" element={<ProtectedRoute><UserDashboardPage /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute requiredRole="ADMIN"><AdminDashboardPage /></ProtectedRoute>} />
+        <Route path="/employee" element={<ProtectedRoute requiredRole={["EMPLOYEE", "DISPATCH", "TOURGUIDE"]}><EmployeeDashboardPage /></ProtectedRoute>} />
 
         {/* Error Fallbacks */}
         <Route path="*" element={<Navigate to="/" replace />} />

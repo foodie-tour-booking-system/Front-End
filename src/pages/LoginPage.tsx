@@ -28,10 +28,15 @@ export function LoginPage() {
         Cookies.set("token", response.token, { expires: 1 }); // Expires in 1 day
         const decoded: any = jwtDecode(response.token);
         const scopeArray = decoded.scope ? decoded.scope.split(" ") : [];
-        const isAdmin = scopeArray.includes("ROLE_ADMIN");
 
-        if (isAdmin) {
+        if (scopeArray.includes("ROLE_ADMIN")) {
           navigate("/admin");
+        } else if (
+          scopeArray.includes("ROLE_EMPLOYEE") ||
+          scopeArray.includes("ROLE_DISPATCH") ||
+          scopeArray.includes("ROLE_TOURGUIDE")
+        ) {
+          navigate("/employee");
         } else {
           navigate("/dashboard");
         }

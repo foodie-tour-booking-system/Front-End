@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Users, Shield, Map, Lock, Settings, LogOut, Menu, UserCircle, CalendarDays, Navigation } from "lucide-react";
+import { Users, Shield, Map, Lock, Settings, LogOut, Menu, UserCircle, CalendarDays, Navigation, BookMarked } from "lucide-react";
 import { AdminTourInventory } from "@/components/blocks/AdminTourInventory";
 import { AdminEmployeeDirectory } from "@/components/blocks/AdminEmployeeDirectory";
 import { AdminDynamicPermissions } from "@/components/blocks/AdminDynamicPermissions";
@@ -9,6 +9,7 @@ import { AdminRoleManager } from "@/components/blocks/AdminRoleManager";
 import { AdminPermissionManager } from "@/components/blocks/AdminPermissionManager";
 import { AdminScheduleManager } from "@/components/blocks/AdminScheduleManager";
 import { AdminRouteManager } from "@/components/blocks/AdminRouteManager";
+import { AdminBookingManager } from "@/components/blocks/AdminBookingManager";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { AuthService } from "@/services/AuthService";
@@ -21,7 +22,8 @@ type AdminView =
   | "roles"
   | "permission_catalog"
   | "schedules"
-  | "routes";
+  | "routes"
+  | "bookings";
 
 export function AdminDashboardPage() {
   const [currentView, setCurrentView] = useState<AdminView>("tours");
@@ -190,6 +192,19 @@ export function AdminDashboardPage() {
                 <span className="text-sm">Routes</span>
               </button>
 
+              {/* Bookings */}
+              <button
+                onClick={() => setCurrentView("bookings")}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group ${
+                  currentView === "bookings"
+                    ? "bg-primary/10 text-[#d4ac0d] dark:text-primary font-bold"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground font-medium"
+                }`}
+              >
+                <BookMarked className="w-5 h-5" />
+                <span className="text-sm">Bookings</span>
+              </button>
+
               {/* System Settings (disabled) */}
               <button
                 disabled
@@ -243,6 +258,7 @@ export function AdminDashboardPage() {
         {currentView === "permission_catalog" && <AdminPermissionManager />}
         {currentView === "schedules" && <AdminScheduleManager />}
         {currentView === "routes" && <AdminRouteManager />}
+        {currentView === "bookings" && <AdminBookingManager />}
       </main>
     </div>
   );

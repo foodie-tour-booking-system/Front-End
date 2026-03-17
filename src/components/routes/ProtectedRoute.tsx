@@ -4,7 +4,7 @@ import { jwtDecode } from "jwt-decode";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: string;
+  requiredRole?: string | string[];
 }
 
 export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
@@ -20,9 +20,14 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
 
     const userRole = scopeArray.find((s: string) => s.startsWith("ROLE_"));
 
-    if (requiredRole && userRole !== `ROLE_${requiredRole}`) {
-      // Nếu không đúng role, chuyển về trang 403 hoặc trang chủ
-      return <Navigate to="/403" replace />;
+    if (requiredRole) {
+      const allowedRoles = Array.isArray(requiredRole)
+        ? requiredRole.map((r) => `ROLE_${r}`)
+        : [`ROLE_${requiredRole}`];
+
+      if (!allowedRoles.includes(userRole)) {
+        return <Navigate to="/403" replace />;
+      }
     }
 
     return children;
