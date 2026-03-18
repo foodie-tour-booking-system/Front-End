@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ShieldCheck, Loader2, AlertTriangle, Wallet, CreditCard, Smartphone } from "lucide-react";
+import { ShieldCheck, Loader2, AlertTriangle } from "lucide-react";
 import { BookingService } from "@/services/BookingService";
 import type { TourResponse } from "@/services/TourService";
 import type { BookingFormData } from "@/pages/BookingPage";
@@ -16,19 +16,19 @@ const PAYMENT_OPTIONS: { value: "VNPAY" | "MOMO" | "VISA"; label: string; icon: 
   {
     value: "VNPAY",
     label: "VNPay",
-    icon: <Wallet className="w-5 h-5" />,
+    icon: <img src="/vnpay.png" alt="VNPay" className="w-8 h-8 object-contain" />,
     description: "Pay via VNPay e-wallet or internet banking",
   },
   {
     value: "MOMO",
     label: "MoMo",
-    icon: <Smartphone className="w-5 h-5" />,
+    icon: <img src="/momo.png" alt="MoMo" className="w-8 h-8 object-contain rounded-lg" />,
     description: "Pay via MoMo mobile wallet",
   },
   {
     value: "VISA",
     label: "Visa / Credit Card",
-    icon: <CreditCard className="w-5 h-5" />,
+    icon: <img src="/visa.png" alt="Visa" className="w-10 h-8 object-contain" />,
     description: "Pay with Visa, Mastercard, or JCB",
   },
 ];
@@ -144,7 +144,7 @@ export function BookingStep2({ tour, form, onUpdateForm, onBack, onNext }: Booki
                     {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
                   </div>
 
-                  <div className={`flex-shrink-0 p-2 rounded-lg ${isSelected ? "bg-primary/20 text-primary" : "bg-secondary text-muted-foreground"}`}>
+                  <div className={`flex-shrink-0 p-1.5 rounded-lg bg-white border transition-all ${isSelected ? "border-primary/40 shadow-sm" : "border-border"}`}>
                     {opt.icon}
                   </div>
 
