@@ -6,7 +6,7 @@ import { AuthService } from "@/services/AuthService";
 export function Navbar() {
   const navigate = useNavigate();
   const token = Cookies.get("token");
-  
+
   let isAdmin = false;
   let isUser = false;
 
@@ -39,7 +39,7 @@ export function Navbar() {
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <Link to="/" className="flex items-center gap-2">
           <div className="text-2xl font-display font-bold text-foreground tracking-widest uppercase">
-            Les Rives
+            Foodie Tour
           </div>
         </Link>
         <nav className="hidden md:flex items-center gap-6">
@@ -50,7 +50,7 @@ export function Navbar() {
             Home
           </Link>
           <Link
-            to="/tours/1"
+            to="/tours"
             className="text-sm font-medium text-foreground hover:text-primary transition-colors"
           >
             Tours
@@ -65,7 +65,7 @@ export function Navbar() {
             to="/booking"
             className="text-sm font-medium text-foreground hover:text-primary transition-colors"
           >
-            Book
+            Booking
           </Link>
           {isUser && !isAdmin && (
             <Link
@@ -126,6 +126,6 @@ export function Navbar() {
           </svg>
         </button>
       </div>
-</nav>
+    </nav>
   );
 }
