@@ -27,13 +27,18 @@ export interface BookingResponse {
   bookingCode?: string;
   totalPrice?: number;
   pickupLocation?: string;
-  bookingStatus?: "PENDING" | "COMPLETED" | "CANCELLED";
-  date?: string;
+  bookingStatus?: "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED" | "RESCHEDULED";
+  departureTime?: string;
+  deposit?: boolean;
+  amountPaid?: number;
+  remainingAmount?: number;
+  duration?: number;
+  tourId?: number;   // ← dùng để lọc lịch trình cùng tour
 }
 
 export interface ProcessRelocateRequest {
   relocateRequestId?: number;
-  approved?: boolean;
+  isApproved?: boolean;
 }
 
 export interface RelocateBookingRequest {
@@ -50,7 +55,23 @@ export interface RelocateBookingResponse {
 }
 
 
+export interface RescheduleRequest {
+  bookingId?: number;
+  scheduleId?: number;
+  newTourDate?: string;
+  reason?: string;
+}
+
 export const BookingService = {
+  /**
+   * POST /api/booking/reschedule
+   */
+  rescheduleBooking: async (body: RescheduleRequest): Promise<string> => {
+    const { data, error } = await apiClient.POST("/api/booking/reschedule" as any, { body: body as any });
+    if (error) throw error;
+    return data as string;
+  },
+
   /**
    * PUT /api/booking/relocate/process
    */
@@ -90,8 +111,11 @@ export const BookingService = {
   /**
    * POST /api/booking/relocate/verify
    */
-  verifyBooking: async (body: RelocateBookingRequest): Promise<string> => {
-    const { data, error } = await apiClient.POST("/api/booking/relocate/verify" as any, { body: body as any });
+  verifyBooking: async (body: RelocateBookingRequest, token?: string): Promise<string> => {
+    const { data, error } = await apiClient.POST("/api/booking/relocate/verify" as any, { 
+      body: body as any,
+      headers: token ? { "Access-Token": token } : undefined
+    });
     if (error) throw error;
     return data as string;
   },

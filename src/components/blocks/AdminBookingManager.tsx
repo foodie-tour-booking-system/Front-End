@@ -39,6 +39,28 @@ function formatDate(iso?: string) {
   }
 }
 
+function formatDateRange(startIso?: string, duration?: number) {
+  if (!startIso) return "—";
+  try {
+    const start = new Date(startIso);
+    const durMs = duration ? (duration > 24 ? duration * 60 * 1000 : duration * 60 * 60 * 1000) : 0;
+    const end = durMs ? new Date(start.getTime() + durMs) : null;
+    
+    const dateStr = start.toLocaleDateString("vi-VN", { dateStyle: "medium" });
+    const startTimeStr = start.toLocaleTimeString("vi-VN", { timeStyle: "short" });
+    
+    if (!end) return `${dateStr}, ${startTimeStr}`;
+    
+    if (start.getDate() === end.getDate()) {
+       return `${dateStr}, ${startTimeStr} - ${end.toLocaleTimeString("vi-VN", { timeStyle: "short" })}`;
+    } else {
+       return `${startTimeStr} ${dateStr} - ${end.toLocaleTimeString("vi-VN", { timeStyle: "short" })} ${end.toLocaleDateString("vi-VN", { dateStyle: "medium" })}`;
+    }
+  } catch {
+    return startIso;
+  }
+}
+
 function formatCurrency(amount?: number) {
   if (amount === undefined || amount === null) return "—";
   return new Intl.NumberFormat("vi-VN", {
@@ -52,12 +74,16 @@ function formatCurrency(amount?: number) {
 function BookingStatusBadge({ status }: { status?: string }) {
   const colorMap: Record<string, string> = {
     PENDING: "bg-yellow-100/20 text-yellow-600 border-yellow-300/30",
+    CONFIRMED: "bg-green-100/20 text-green-600 border-green-300/30",
     COMPLETED: "bg-green-100/20 text-green-600 border-green-300/30",
+    RESCHEDULED: "bg-blue-100/20 text-blue-600 border-blue-300/30",
     CANCELLED: "bg-red-100/20 text-red-500 border-red-300/30",
   };
   const dotMap: Record<string, string> = {
     PENDING: "bg-yellow-500",
+    CONFIRMED: "bg-green-500",
     COMPLETED: "bg-green-500",
+    RESCHEDULED: "bg-blue-500",
     CANCELLED: "bg-red-500",
   };
   return (
@@ -201,8 +227,8 @@ function BookingDetailModal({ bookingCode, onClose }: BookingDetailModalProps) {
                   <p className="text-base font-bold text-foreground">{formatCurrency(booking.totalPrice)}</p>
                 </div>
                 <div className="bg-secondary/20 rounded-xl p-4 border border-border">
-                  <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wide font-medium">Khởi hành</p>
-                  <p className="text-sm font-semibold text-foreground">{formatDate(booking.departureTime)}</p>
+                  <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wide font-medium">Lịch trình</p>
+                  <p className="text-sm font-semibold text-foreground">{formatDateRange(booking.departureTime, booking.duration)}</p>
                 </div>
               </div>
 
@@ -268,7 +294,7 @@ function RelocateProcessModal({ request, onClose, onProcessed }: RelocateProcess
     try {
       await BookingService.processRequest({
         relocateRequestId: request.relocateRequestId,
-        approved,
+        isApproved: approved,
       });
       onProcessed();
       onClose();
@@ -526,7 +552,7 @@ export function AdminBookingManager() {
                             </span>
                             <span className="text-xs text-muted-foreground flex items-center gap-1">
                               <Clock className="w-3 h-3" />
-                              {formatDate(searchedBooking.departureTime)}
+                              {formatDateRange(searchedBooking.departureTime, searchedBooking.duration)}
                             </span>
                             {searchedBooking.pickupLocation && (
                               <span className="text-xs text-muted-foreground flex items-center gap-1">

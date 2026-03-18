@@ -5,18 +5,29 @@ import { Link, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { AuthService } from "@/services/AuthService";
 import { BookingService, type BookingResponse } from "@/services/BookingService";
+import { ScheduleService, type ScheduleResponse } from "@/services/ScheduleService";
 import { jwtDecode } from "jwt-decode";
-import { MapPin, Hash, Calendar, Loader2, CreditCard, X, Ticket, CheckCircle2, QrCode } from "lucide-react";
+import { MapPin, Hash, Calendar, Loader2, CreditCard, X, Ticket, CheckCircle2, QrCode, AlertTriangle, CalendarSync } from "lucide-react";
 
-function formatDateTime(iso?: string) {
-  if (!iso) return "—";
+function formatDateTimeRange(startIso?: string, duration?: number) {
+  if (!startIso) return "—";
   try {
-    return new Date(iso).toLocaleString("vi-VN", {
-      dateStyle: "medium",
-      timeStyle: "short",
-    });
+    const start = new Date(startIso);
+    const durMs = duration ? (duration > 24 ? duration * 60 * 1000 : duration * 60 * 60 * 1000) : 0;
+    const end = durMs ? new Date(start.getTime() + durMs) : null;
+    
+    const dateStr = start.toLocaleDateString("vi-VN", { dateStyle: "medium" });
+    const startTimeStr = start.toLocaleTimeString("vi-VN", { timeStyle: "short" });
+    
+    if (!end) return `${dateStr}, ${startTimeStr}`;
+    
+    if (start.getDate() === end.getDate()) {
+       return `${dateStr}, ${startTimeStr} - ${end.toLocaleTimeString("vi-VN", { timeStyle: "short" })}`;
+    } else {
+       return `${startTimeStr} ${dateStr} - ${end.toLocaleTimeString("vi-VN", { timeStyle: "short" })} ${end.toLocaleDateString("vi-VN", { dateStyle: "medium" })}`;
+    }
   } catch {
-    return iso;
+    return startIso;
   }
 }
 
@@ -75,7 +86,7 @@ function PassModal({ booking, onClose, userName }: { booking: BookingResponse; o
             </div>
             <div>
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5">Date & Time</p>
-              <p className="text-sm font-bold text-foreground">{formatDateTime(booking.date)}</p>
+              <p className="text-sm font-bold text-foreground">{formatDateTimeRange(booking.departureTime, booking.duration)}</p>
             </div>
             <div>
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5">Status</p>
@@ -114,12 +125,296 @@ function PassModal({ booking, onClose, userName }: { booking: BookingResponse; o
   );
 }
 
+// Reschedule / Relocate Modal
+function RescheduleRelocateModal({ booking, onClose, onSuccess }: { booking: BookingResponse; onClose: () => void; onSuccess: () => void }) {
+  const [activeTab, setActiveTab] = useState<"reschedule" | "relocate">("reschedule");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+
+  // Reschedule
+  const [rescheduleScheduleId, setRescheduleScheduleId] = useState("");
+  const [rescheduleSchedules, setRescheduleSchedules] = useState<ScheduleResponse[]>([]);
+  const [loadingRescheduleSchedules, setLoadingRescheduleSchedules] = useState(false);
+
+  // Relocate
+  const [relocateStep, setRelocateStep] = useState<1 | 2>(1);
+  const [relocateToken, setRelocateToken] = useState(""); // ← token trả về từ bước gửi OTP
+  const [otp, setOtp] = useState("");
+  const [scheduleId, setScheduleId] = useState("");
+  const [schedules, setSchedules] = useState<ScheduleResponse[]>([]);
+  const [loadingSchedules, setLoadingSchedules] = useState(false);
+
+  // Load schedules for reschedule tab — chỉ lịch cùng tour, trong tương lai
+  useEffect(() => {
+    if (activeTab === "reschedule" && rescheduleSchedules.length === 0) {
+      setLoadingRescheduleSchedules(true);
+      ScheduleService.getSchedules({
+        tourId: booking.tourId,          // ← chỉ lấy lịch của cùng 1 tour
+        scheduleStatus: "ACTIVE",
+      })
+        .then(res => {
+          const now = new Date();
+          const future = (res || []).filter(s => {
+            if (!s.departureAt) return false;
+            const depDate = new Date(s.departureAt);
+            // Loại bỏ lịch trong quá khứ và lịch hiện tại của booking này
+            return depDate > now && s.departureAt !== booking.departureTime;
+          });
+          setRescheduleSchedules(future);
+        })
+        .catch(err => console.error(err))
+        .finally(() => setLoadingRescheduleSchedules(false));
+    }
+  }, [activeTab, rescheduleSchedules.length]);
+
+
+  // Load schedules for relocate tab
+  useEffect(() => {
+    if (activeTab === "relocate" && relocateStep === 2 && schedules.length === 0) {
+      setLoadingSchedules(true);
+      ScheduleService.getSchedules()
+        .then(res => {
+          setSchedules(res || []);
+        })
+        .catch(err => console.error(err))
+        .finally(() => setLoadingSchedules(false));
+    }
+  }, [activeTab, relocateStep, schedules.length]);
+
+  const handleReschedule = async () => {
+    if (!rescheduleScheduleId) {
+      setError("Please select a new schedule.");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    setSuccessMsg("");
+    try {
+      // Gửi scheduleId để Backend tìm chính xác lịch trình
+      await BookingService.rescheduleBooking({
+        bookingId: booking.bookingId,
+        scheduleId: Number(rescheduleScheduleId),
+        reason: "Reschedule request from user",
+
+      });
+      setSuccessMsg("Schedule changed successfully!");
+
+      onSuccess();
+      setTimeout(onClose, 2000);
+    } catch (err: any) {
+      setError(err?.message || "Error changing schedule.");
+
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRelocateStart = async () => {
+    setLoading(true);
+    setError("");
+    setSuccessMsg("");
+    try {
+      // Backend trả về relocate-token đặc biệt (khác với JWT đăng nhập)
+      const token = await BookingService.relocateBooking({ bookingCode: booking.bookingCode! });
+      setRelocateToken(token); // ← lưu lại token để dùng ở bước 2
+      setRelocateStep(2);
+      setSuccessMsg("OTP has been sent to your email.");
+
+    } catch (err: any) {
+      setError(err?.message || "Error initiating request.");
+
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRelocateVerify = async () => {
+    if (!otp || !scheduleId) {
+      setError("Please enter OTP and select a new schedule.");
+
+      return;
+    }
+    if (!relocateToken) {
+      setError("Session expired. Please start again.");
+
+      return;
+    }
+    setLoading(true);
+    setError("");
+    setSuccessMsg("");
+    try {
+      // Truyền đúng relocate-token (trả về từ bước gửi OTP), KHÔNG phải JWT cookie
+      await BookingService.verifyBooking({
+        bookingCode: booking.bookingCode,
+        otp,
+        scheduleId: Number(scheduleId),
+      }, relocateToken);
+      setSuccessMsg("OTP verified! Reschedule request created successfully!");
+
+      onSuccess();
+      setTimeout(onClose, 2000);
+    } catch (err: any) {
+      setError(err?.message || "Invalid OTP or error.");
+
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="w-full max-w-md bg-card border border-border rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-secondary/30">
+          <div className="flex items-center gap-2">
+            <CalendarSync className="w-5 h-5 text-primary" />
+            <h2 className="text-lg font-bold text-foreground">Change Schedule</h2>
+          </div>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="flex border-b border-border">
+          <button
+            onClick={() => setActiveTab("reschedule")}
+            className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors border-b-2 ${
+              activeTab === "reschedule" ? "border-primary text-primary bg-primary/5" : "border-transparent text-muted-foreground hover:bg-secondary/20"
+            }`}
+          >
+            Quick Reschedule
+          </button>
+          <button
+            onClick={() => setActiveTab("relocate")}
+            className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors border-b-2 ${
+              activeTab === "relocate" ? "border-primary text-primary bg-primary/5" : "border-transparent text-muted-foreground hover:bg-secondary/20"
+            }`}
+          >
+            Change Tour (OTP)
+          </button>
+        </div>
+
+        <div className="p-6">
+          {error && (
+            <div className="mb-4 flex items-start gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm">
+              <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+              {error}
+            </div>
+          )}
+          {successMsg && (
+            <div className="mb-4 flex items-start gap-2 p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 text-sm">
+              <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
+              {successMsg}
+            </div>
+          )}
+
+          {activeTab === "reschedule" ? (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Select New Schedule</label>
+                {loadingRescheduleSchedules ? (
+                  <div className="flex items-center justify-center h-11 gap-2 text-muted-foreground text-sm">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Loading schedules...
+                  </div>
+                ) : rescheduleSchedules.length === 0 ? (
+                  <div className="flex items-center justify-center h-11 text-muted-foreground text-sm border border-dashed border-border rounded-lg">
+                    No schedules available
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+                    {rescheduleSchedules.map(s => (
+                      <button
+                        key={s.scheduleId}
+                        type="button"
+                        onClick={() => setRescheduleScheduleId(String(s.scheduleId))}
+                        className={`w-full text-left rounded-lg border px-4 py-3 transition-all ${
+                          rescheduleScheduleId === String(s.scheduleId)
+                            ? "border-primary bg-primary/10 text-foreground"
+                            : "border-border bg-background hover:border-primary/50 hover:bg-primary/5 text-foreground"
+                        }`}
+                      >
+                        <p className="text-sm font-bold">{formatDateTimeRange(s.departureAt)}</p>
+                        {s.scheduleDescription && (
+                          <p className="text-xs text-muted-foreground mt-0.5">{s.scheduleDescription}</p>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <Button onClick={handleReschedule} disabled={loading || !rescheduleScheduleId} className="w-full font-bold">
+                {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                Submit Reschedule Request
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {relocateStep === 1 ? (
+                <>
+                  <p className="text-sm text-muted-foreground">An OTP will be sent to your email to verify the tour change request.</p>
+                  <Button onClick={handleRelocateStart} disabled={loading} className="w-full font-bold">
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                    Start (Send OTP)
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">OTP Code</label>
+                    <input
+                      type="text"
+                      placeholder="Enter OTP from your email"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value)}
+                      className="w-full flex h-11 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Select New Schedule</label>
+                    <div className="relative">
+                      <select
+                        value={scheduleId}
+                        onChange={(e) => setScheduleId(e.target.value)}
+                        disabled={loadingSchedules}
+                        className="w-full flex h-11 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <option value="" disabled>
+                          {loadingSchedules ? "Loading schedules..." : "-- Select new schedule --"}
+                        </option>
+                        {schedules.map(s => (
+                          <option key={s.scheduleId} value={s.scheduleId}>
+                            {s.scheduleDescription || formatDateTimeRange(s.departureAt)} (ID: {s.scheduleId})
+                          </option>
+                        ))}
+                      </select>
+                      {loadingSchedules && (
+                        <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />
+                      )}
+                    </div>
+                  </div>
+                  <Button onClick={handleRelocateVerify} disabled={loading} className="w-full font-bold">
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                    Confirm & Submit Request
+                  </Button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function UserDashboardPage() {
   const navigate = useNavigate();
   const [bookings, setBookings] = useState<BookingResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [userInfo, setUserInfo] = useState<{ name: string; email: string } | null>(null);
   const [selectedBookingForPass, setSelectedBookingForPass] = useState<BookingResponse | null>(null);
+  const [selectedBookingForReschedule, setSelectedBookingForReschedule] = useState<BookingResponse | null>(null);
+  const [activeBookingId, setActiveBookingId] = useState<number | null>(null);
 
   useEffect(() => {
     const token = Cookies.get("token");
@@ -159,10 +454,13 @@ export function UserDashboardPage() {
         
         // Sort by date descending
         const sorted = validBookings.sort((a, b) => {
-          return new Date(b.date || "").getTime() - new Date(a.date || "").getTime();
+          return new Date(b.departureTime || "").getTime() - new Date(a.departureTime || "").getTime();
         });
         
         setBookings(sorted);
+        if (sorted.length > 0) {
+          setActiveBookingId(sorted[0].bookingId!);
+        }
       } catch (err) {
         console.error("History Fetch Error:", err);
       } finally {
@@ -184,8 +482,13 @@ export function UserDashboardPage() {
     }
   };
 
-  const currentBooking = bookings.length > 0 ? bookings[0] : null;
-  const pastBookings = bookings.length > 1 ? bookings.slice(1) : [];
+  const currentBooking = activeBookingId 
+    ? bookings.find(b => b.bookingId === activeBookingId) || bookings[0]
+    : bookings.length > 0 ? bookings[0] : null;
+    
+  const pastBookings = currentBooking 
+    ? bookings.filter(b => b.bookingId !== currentBooking.bookingId) 
+    : [];
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground font-sans transition-colors duration-200">
@@ -196,6 +499,16 @@ export function UserDashboardPage() {
           booking={selectedBookingForPass} 
           onClose={() => setSelectedBookingForPass(null)} 
           userName={userInfo?.name}
+        />
+      )}
+
+      {selectedBookingForReschedule && (
+        <RescheduleRelocateModal
+          booking={selectedBookingForReschedule}
+          onClose={() => setSelectedBookingForReschedule(null)}
+          onSuccess={() => {
+            // Optional: refresh data if needed
+          }}
         />
       )}
 
@@ -283,9 +596,9 @@ export function UserDashboardPage() {
                   {currentBooking && (
                     <section>
                       <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-bold text-foreground">Next Adventure</h2>
+                        <h2 className="text-xl font-bold text-foreground">Trip Details</h2>
                         <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider border ${
-                          currentBooking.bookingStatus === 'COMPLETED' 
+                          ['COMPLETED', 'CONFIRMED', 'RESCHEDULED'].includes(currentBooking.bookingStatus || '')
                             ? 'bg-green-500/10 text-green-600 border-green-500/20' 
                             : currentBooking.bookingStatus === 'CANCELLED'
                             ? 'bg-red-500/10 text-red-500 border-red-500/20'
@@ -294,6 +607,7 @@ export function UserDashboardPage() {
                           {currentBooking.bookingStatus === 'PENDING' && <span className="size-2 rounded-full bg-primary animate-pulse"></span>}
                           {currentBooking.bookingStatus}
                         </span>
+
                       </div>
                       <div className="rounded-2xl bg-card p-6 shadow-sm border border-border flex flex-col lg:flex-row gap-8">
                         <div className="w-full lg:w-1/3 shrink-0">
@@ -332,7 +646,7 @@ export function UserDashboardPage() {
                             </div>
                             <div>
                               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-1">Departure</p>
-                              <p className="text-sm font-bold text-foreground">{formatDateTime(currentBooking.date)}</p>
+                              <p className="text-sm font-bold text-foreground">{formatDateTimeRange(currentBooking.departureTime, currentBooking.duration)}</p>
                             </div>
                             <div>
                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-1">Payment</p>
@@ -352,6 +666,13 @@ export function UserDashboardPage() {
                                 <Button className="w-full font-bold px-8">Book Another</Button>
                              </Link>
                              <Button 
+                               onClick={() => setSelectedBookingForReschedule(currentBooking)}
+                               variant="secondary" 
+                               className="flex-1 sm:flex-none font-bold px-8"
+                             >
+                               Change Schedule
+                             </Button>
+                             <Button 
                                onClick={() => setSelectedBookingForPass(currentBooking)}
                                variant="outline" 
                                className="flex-1 sm:flex-none font-bold px-8 border-border"
@@ -364,15 +685,15 @@ export function UserDashboardPage() {
                     </section>
                   )}
 
-                  {/* Past Trips */}
+                  {/* Other Bookings */}
                   {pastBookings.length > 0 && (
                     <section>
-                      <h2 className="text-xl font-bold text-foreground mb-4">Past Trips</h2>
+                      <h2 className="text-xl font-bold text-foreground mb-4">Other Bookings</h2>
                       <div className="grid gap-3">
                         {pastBookings.map((b) => (
                           <div 
                             key={b.bookingId} 
-                            onClick={() => setSelectedBookingForPass(b)}
+                            onClick={() => setActiveBookingId(b.bookingId!)}
                             className="group flex flex-col sm:flex-row items-center justify-between gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/50 hover:shadow-md cursor-pointer"
                           >
                             <div className="flex w-full sm:w-auto items-center gap-4">
@@ -384,8 +705,15 @@ export function UserDashboardPage() {
                                   Booking #{b.bookingCode}
                                 </h4>
                                 <p className="text-xs text-muted-foreground">
-                                  {formatDateTime(b.date)} • {b.bookingStatus}
+                                  {formatDateTimeRange(b.departureTime, b.duration)} • <span className={
+                                    ['COMPLETED', 'CONFIRMED', 'RESCHEDULED'].includes(b.bookingStatus || '')
+                                      ? 'text-green-600 font-bold'
+                                      : b.bookingStatus === 'CANCELLED'
+                                      ? 'text-red-500 font-bold'
+                                      : 'font-bold'
+                                  }>{b.bookingStatus}</span>
                                 </p>
+
                               </div>
                             </div>
                             <div className="flex w-full sm:w-auto items-center justify-between sm:justify-end gap-6 border-t sm:border-t-0 pt-3 sm:pt-0 mt-3 sm:mt-0">
