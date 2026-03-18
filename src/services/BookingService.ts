@@ -36,6 +36,27 @@ export interface BookingResponse {
   tourId?: number;   // ← dùng để lọc lịch trình cùng tour
 }
 
+export interface TrackingStep {
+  name: string;
+  time: string;
+  isCompleted: boolean;
+  type: "START" | "STOP" | "END";
+}
+
+export interface TrackingResponse {
+  bookingCode: string;
+  tourName: string;
+  tourDescription: string;
+  departureTime: string;
+  pickupLocation: string;
+  bookingStatus: string;
+  adultCount: number;
+  childrenCount: number;
+  totalPrice: number;
+  routeDescription: string;
+  itinerary: TrackingStep[];
+}
+
 export interface ProcessRelocateRequest {
   relocateRequestId?: number;
   isApproved?: boolean;
@@ -154,6 +175,15 @@ export const BookingService = {
     const { data, error } = await apiClient.GET("/api/booking/all" as any);
     if (error) throw error;
     return data as BookingResponse[];
+  },
+
+  /**
+   * GET /api/v1/customer/tracking/{bookingCode}
+   */
+  getTracking: async (pathParams: { bookingCode: string }): Promise<TrackingResponse> => {
+    const { data, error } = await apiClient.GET("/api/v1/customer/tracking/{bookingCode}" as any, { params: { path: pathParams } });
+    if (error) throw error;
+    return data as TrackingResponse;
   },
 
 };

@@ -10,6 +10,7 @@ import { EmployeeDashboardPage } from "@/pages/EmployeeDashboardPage";
 import { ResetPasswordPage } from "@/pages/ResetPasswordPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { RegisterPage } from "@/pages/RegisterPage";
+import { TrackingPage } from "@/pages/TrackingPage";
 import { ProtectedRoute } from "./components/routes/ProtectedRoute";
 
 function App() {
@@ -22,6 +23,8 @@ function App() {
         <Route path="/tours/:id" element={<TourDetailsPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/booking" element={<BookingPage />} />
+        <Route path="/tracking" element={<TrackingPage />} />
+        <Route path="/tracking/:bookingCode" element={<TrackingPage />} />
 
         {/* Auth Routes */}
         <Route path="/login" element={<LoginPage />} />

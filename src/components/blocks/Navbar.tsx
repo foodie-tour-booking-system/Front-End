@@ -65,6 +65,12 @@ export function Navbar() {
           >
             Booking
           </Link>
+          <Link
+            to="/tracking"
+            className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+          >
+            Tracking
+          </Link>
           {isAdmin && (
             <Link
               to="/admin"

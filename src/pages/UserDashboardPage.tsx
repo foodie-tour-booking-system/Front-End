@@ -896,6 +896,11 @@ export function UserDashboardPage() {
                                >
                                  View Pass
                                </Button>
+                               <Link to={`/tracking/${currentBooking.bookingCode}`} className="flex-1 sm:flex-none">
+                                 <Button variant="outline" className="w-full font-bold px-8 border-primary text-primary hover:bg-primary/5">
+                                   Track Journey
+                                 </Button>
+                               </Link>
                             </div>
                           </div>
                         </div>
