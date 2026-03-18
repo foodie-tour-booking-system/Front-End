@@ -1,5 +1,3 @@
-
-
 export function Footer() {
   return (
     <footer className="bg-[#222222] text-gray-400 py-12 text-xs leading-relaxed border-t-4 border-gray-600">
@@ -32,11 +30,11 @@ export function Footer() {
           </p>
           <p className="mb-2">
             <strong className="text-white">Reservation Email:</strong>{" "}
-            bookings@lesrivesexperience.com
+            bookings@foodietour.com
           </p>
           <p>
             <strong className="text-white">Sales Email:</strong>{" "}
-            sales@lesrivesexperience.com
+            sales@foodietour.com
           </p>
         </div>
         <div>
@@ -56,33 +54,13 @@ export function Footer() {
           <h5 className="text-white font-bold uppercase mb-4 tracking-wider text-sm font-sans">
             Follow Us
           </h5>
-          <div className="flex space-x-2 mb-6">
-            <a
-              className="bg-white text-gray-900 p-1 rounded hover:bg-gray-200 transition"
-              href="#"
-            >
-              FB
-            </a>
-            <a
-              className="bg-white text-gray-900 p-1 rounded hover:bg-gray-200 transition"
-              href="#"
-            >
-              IG
-            </a>
-            <a
-              className="bg-white text-gray-900 p-1 rounded hover:bg-gray-200 transition"
-              href="#"
-            >
-              TR
-            </a>
-          </div>
           <div className="mt-4 opacity-70">
-            <span className="font-display text-white text-lg">LES RIVES</span>
+            <span className="font-display text-white text-lg">FOODIE TOUR</span>
           </div>
         </div>
       </div>
       <div className="text-center mt-12 pt-8 border-t border-gray-700 text-gray-500 font-sans">
-        <p>© 2010-2023 Les Rives Experience. All rights reserved.</p>
+        <p>© 2026 Foodie Tour. All rights reserved.</p>
       </div>
     </footer>
   );

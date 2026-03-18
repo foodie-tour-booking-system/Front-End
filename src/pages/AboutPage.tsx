@@ -1,5 +1,7 @@
 import { Footer } from "@/components/blocks/Footer";
 import { Navbar } from "@/components/blocks/Navbar";
+import saigonFoodBg from "@/assets/image/saigonfood.jpg";
+import saigonFoodBg2 from "@/assets/image/saigonfood_2.jpg";
 
 export function AboutPage() {
   return (
@@ -11,16 +13,15 @@ export function AboutPage() {
         <section
           className="relative w-full h-[60vh] min-h-[500px] flex items-center justify-center bg-cover bg-center overflow-hidden"
           style={{
-            backgroundImage:
-              "linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5)), url('https://lh3.googleusercontent.com/aida-public/AB6AXuAjG_ffuoW77v9q6WbaCZ5HFx0Y9YDlPkCoeBOybo_EvNOXEYCrXt0G4_mvLRSjs5WVcI2lDAQ1fOa7a0jlOuc2FZih6ScdyN1nA9RFZEQJrdw2mBWr5qRZHFdIcniA1-azStsSfvybw0CRXRqYJj5VgHdBau_SvWznNnmC5sfW57cnMdxQcsdpjfm9KR6hkGLi4MERpdBhkQOmhiYpVDH4IO2xeVWobZubX6R_-swm-VK39zNETLZFIcfsCUtlsKaefqH3IF0T5Lvz')",
+            backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5)), url(${saigonFoodBg})`,
           }}
         >
           <div className="text-center z-10 px-4">
             <h1 className="text-white text-5xl md:text-7xl font-bold tracking-tight mb-4 drop-shadow-md font-display uppercase">
-              OUR STORY
+              OUR CULINARY JOURNEY
             </h1>
             <p className="text-white/90 text-lg md:text-xl max-w-2xl mx-auto font-light tracking-wide">
-              Experience the Authentic Mekong Delta & Saigon River
+              Savor the Authentic Flavors of Ho Chi Minh City
             </p>
           </div>
         </section>
@@ -36,22 +37,23 @@ export function AboutPage() {
                 Our Beginnings & Mission
               </h2>
               <p className="text-muted-foreground text-lg leading-relaxed font-sans">
-                Founded with a passion for showcasing the hidden gems of
-                Vietnam's waterways, Les Rives offers an intimate look at local
-                life. From humble beginnings with a single vessel, we have grown
-                into a fleet of luxury speedboats, dedicated to providing
-                comfort, safety, and authentic cultural immersion.
+                Founded with an insatiable passion for Vietnam's vibrant street
+                food culture, Foodie Tour offers an intimate taste of local
+                life. From humble beginnings exploring hidden alleyways, we have
+                perfected a curated selection of 4 to 6 exclusive food tours,
+                dedicated to providing safe, delicious, and deeply authentic
+                culinary experiences.
               </p>
               <p className="text-muted-foreground text-lg leading-relaxed font-sans">
-                We believe that the best way to understand a country is through
-                its rivers. Our mission is to connect travelers with the heart
-                of Vietnam, navigating beyond the typical tourist paths to
-                reveal the vibrant life along the banks of the Mekong and Saigon
-                rivers.
+                We believe that the best way to understand Vietnam is through
+                its food. Our mission is to connect travelers with the true
+                heart of Saigon, navigating beyond the typical tourist
+                restaurants to pull up a plastic stool and taste the real Ho Chi
+                Minh City alongside the locals.
               </p>
               <div className="pt-4">
                 <button className="text-primary font-bold text-sm uppercase tracking-wider border-b-2 border-primary pb-1 hover:brightness-90 transition-colors">
-                  Read Full History
+                  View Our Menu of Tours
                 </button>
               </div>
             </div>
@@ -59,13 +61,12 @@ export function AboutPage() {
               <div
                 className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
                 style={{
-                  backgroundImage:
-                    "url('https://lh3.googleusercontent.com/aida-public/AB6AXuC-nZ37OyCCkpFtt6zl3-xsp-Qsk1jiaVJ3e4Ivk4MNsHbXqVLm9MuAup_fyFZlaFmvesLleL5F1dOjDzLxgmYbrXQGsWEKP5dDuQFjXLUCB73RqC8RSUZERyLaOzdspVZgaqeOqbasMCWTfTZaLCd-JRTqND_ZwrYUMjqNxv76N3vhGMR3VHk999O8inRnZhEfAwCWj5Fg2Guu1fwlRlxft0z6WcsXu1WlYmSoqCzOfLWlMkiMsbZwm-ypjS1vb2fjMbYGgM7DKk4M')",
+                  backgroundImage: `url(${saigonFoodBg2})`,
                 }}
               />
               <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 to-transparent p-6">
                 <p className="text-white font-display text-xl italic">
-                  "Vintage Elegance on Modern Waters"
+                  "Real Flavors on Saigon's Busy Streets"
                 </p>
               </div>
             </div>
@@ -101,12 +102,12 @@ export function AboutPage() {
                   </svg>
                 </div>
                 <h3 className="text-xl font-bold font-display mb-3 text-foreground uppercase">
-                  Safety First
+                  Hygiene & Safety
                 </h3>
                 <p className="text-muted-foreground font-sans leading-relaxed">
-                  We adhere to the highest international safety standards. Our
-                  vessels are meticulously maintained and equipped with modern
-                  navigation technology.
+                  We carefully vet every single food vendor and stall we visit,
+                  ensuring the highest standards of food hygiene so you can
+                  enjoy Saigon's street food with complete peace of mind.
                 </p>
               </div>
 
@@ -130,11 +131,12 @@ export function AboutPage() {
                   </svg>
                 </div>
                 <h3 className="text-xl font-bold font-display mb-3 text-foreground uppercase">
-                  Local Expertise
+                  Expert Foodie Guides
                 </h3>
                 <p className="text-muted-foreground font-sans leading-relaxed">
-                  Our guides are locals with deep knowledge and passion for
-                  their heritage, offering stories you won't find in guidebooks.
+                  Our guides are born-and-raised Saigonese food lovers who know
+                  every hidden family recipe, offering delicious stories you
+                  won't find in guidebooks.
                 </p>
               </div>
 
@@ -157,12 +159,12 @@ export function AboutPage() {
                   </svg>
                 </div>
                 <h3 className="text-xl font-bold font-display mb-3 text-foreground uppercase">
-                  Sustainable Tourism
+                  Supporting Local Vendors
                 </h3>
                 <p className="text-muted-foreground font-sans leading-relaxed">
-                  We are committed to preserving the Mekong's ecosystem and
-                  supporting local river communities through responsible travel
-                  practices.
+                  We are committed to supporting family-run stalls and giving
+                  back to the local culinary community that makes Saigon's food
+                  scene so incredibly rich.
                 </p>
               </div>
             </div>
@@ -184,11 +186,12 @@ export function AboutPage() {
               </div>
               <div className="md:w-2/3 pb-8 border-b border-border last:border-0">
                 <h3 className="text-xl font-bold font-display mb-2 text-foreground">
-                  The Launch
+                  The First Bite
                 </h3>
                 <p className="text-muted-foreground font-sans">
-                  Les Rives was founded with a single 10-seater speedboat,
-                  offering bespoke sunset cruises on the Saigon River.
+                  Foodie Tour was founded with a single walking tour, guiding a
+                  small group of friends through the bustling street food alleys
+                  of District 4.
                 </p>
               </div>
             </div>
@@ -202,11 +205,12 @@ export function AboutPage() {
               </div>
               <div className="md:w-2/3 pb-8 border-b border-border last:border-0">
                 <h3 className="text-xl font-bold font-display mb-2 text-foreground">
-                  Expansion to Mekong
+                  Expanding the Menu
                 </h3>
                 <p className="text-muted-foreground font-sans">
-                  We launched our signature full-day Mekong Delta tour, quickly
-                  becoming the top-rated river experience in Ho Chi Minh City.
+                  We launched our signature scooter foodie tours, expanding our
+                  catalog to 4-6 specialized routes, quickly becoming a
+                  top-rated culinary experience.
                 </p>
               </div>
             </div>
@@ -220,12 +224,11 @@ export function AboutPage() {
               </div>
               <div className="md:w-2/3 pb-8 border-b border-border last:border-0">
                 <h3 className="text-xl font-bold font-display mb-2 text-foreground">
-                  Fleet Modernization
+                  Culinary Excellence
                 </h3>
                 <p className="text-muted-foreground font-sans">
-                  Introduced 5 new custom-built luxury vessels designed for
-                  stability and comfort, setting a new standard for river
-                  transport.
+                  Partnered with over 50 beloved local vendors and introduced
+                  our premium tasting options for ultimate comfort and variety.
                 </p>
               </div>
             </div>
@@ -239,106 +242,13 @@ export function AboutPage() {
               </div>
               <div className="md:w-2/3">
                 <h3 className="text-xl font-bold font-display mb-2 text-foreground">
-                  Leading the Way
+                  Leading the Food Scene
                 </h3>
                 <p className="text-muted-foreground font-sans">
-                  Les Rives continues to innovate with sustainable practices and
-                  new curated routes to untouched destinations.
+                  Foodie Tour continues to innovate with new curated gastronomic
+                  routes, showcasing the ever-evolving flavors of Ho Chi Minh
+                  City.
                 </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Meet The Team Section */}
-        <section className="py-20 bg-secondary/30">
-          <div className="max-w-[1280px] mx-auto px-6">
-            <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
-              <div>
-                <span className="text-primary font-bold tracking-widest text-sm uppercase">
-                  Our People
-                </span>
-                <h2 className="text-3xl md:text-4xl font-display font-bold mt-2 text-foreground uppercase">
-                  Meet The Team
-                </h2>
-              </div>
-              <p className="md:w-1/2 text-muted-foreground font-sans text-lg">
-                Our crew is the heart of Les Rives. Professional, friendly, and
-                deeply knowledgeable, they ensure every journey is memorable.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <div className="flex flex-col gap-3 group">
-                <div className="aspect-[3/4] bg-card rounded-lg overflow-hidden relative">
-                  <img
-                    alt="Female tour guide smiling professional"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZ9Aoo97Cz3zocn9NdlUHBzyT5NpipUPknnNpyDZukAJf1nPgZEeMEbSo9qm8pDwz_Q_TdiMZnsFWYfgxMcpMeveWwFXPjjvYVMQvFe4DQ14Q0BzVKkgcGFNjHXtwk6L06Bkd3VCD_ZGgd_pVfR5IUGvJsLgcQRvYtthIiDhHWWsaHzdBCd9WVCej2NBmwb39O_sSuG_rbhPbEF0tigthB4aCNN0jsk3vLQmspG0ly66W3lOqkGhgFRoICKD1sIBcgnHW1rIfwywWN"
-                  />
-                </div>
-                <div>
-                  <h3 className="font-bold text-lg font-display text-foreground">
-                    Linh Nguyen
-                  </h3>
-                  <p className="text-primary text-sm font-medium uppercase font-sans">
-                    Senior Guide
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-3 group">
-                <div className="aspect-[3/4] bg-card rounded-lg overflow-hidden relative">
-                  <img
-                    alt="Male boat captain in uniform"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVPbzujQiLCNOucj5RVIcoQUG8U4sJPwBjuBeIz3ziTIMiZohUERgiQzXyWcDCbq4UTOcn_VnSn7yzCXhJOmTCAIaNq8eggwfQDXiWWJimH7SRjYF8hzpGAeFX639pg4ANbw4WiXg123_mPlee_WmaPld696sDUoumSKuTDUKtnBHKHm8zERtd_w5zdIVcRaencRLomzQH6U55QNt4r0i_pevTvvcaxFsWGh1_Upk7WyOHkBzBqftJ1HHCdAOAdyT-B35MUatX-CrC"
-                  />
-                </div>
-                <div>
-                  <h3 className="font-bold text-lg font-display text-foreground">
-                    Minh Tran
-                  </h3>
-                  <p className="text-primary text-sm font-medium uppercase font-sans">
-                    Fleet Captain
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-3 group">
-                <div className="aspect-[3/4] bg-card rounded-lg overflow-hidden relative">
-                  <img
-                    alt="Male tour operations manager portrait"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnA1B_5xezCAQ_r41XVgfHmOIlXe3GPS2knsoqHu2W6hdouAetWPcr7wp9U43doNU8fABJ5iuXrYxuAAbhWKfnpXNfg5-DKvjmrCuFkxecXsgeyhkl691rE_65pecRpVYa011Jhp0XnTcP2aRmJ9Dl5hewSlztZ_cyFnnai8CzLtoF9bfTCeu82xKahR5vi4mVT4sTx-LvjIJ2bEBOt4iQabpvcQ1q3uVG7C9UmwRUpwJOohHkS-VMzB_v_tXqS91SxPZ20pHEumei"
-                  />
-                </div>
-                <div>
-                  <h3 className="font-bold text-lg font-display text-foreground">
-                    David Hoang
-                  </h3>
-                  <p className="text-primary text-sm font-medium uppercase font-sans">
-                    Operations Manager
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-3 group">
-                <div className="aspect-[3/4] bg-card rounded-lg overflow-hidden relative">
-                  <img
-                    alt="Female customer service representative portrait"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCU-gj8bGS5vkKSkoewaGsvpcGzztFI03Fx4rtEmM6B7lbmQhGtQ0qktdxxXoS_WjY3Bo_IhH0ezFeNrcc1kH4PFD6WvMae_iCIKXfJLNGbAN_rZmPZnNehVj2nP97wZGpNzW5YX9f4Ye5__yN-qcJcyl25cWuK8gvC4UmieRffyIcpgAzzNIaOq3RMaPuPG9C0qwvacppjcLpaIbiGSpmZ82wvr9fgJg1TTaO6AzTAFRrcomZZBvp8JQyjaaqVCnpBF6_IJOE-JwX"
-                  />
-                </div>
-                <div>
-                  <h3 className="font-bold text-lg font-display text-foreground">
-                    Sarah Vo
-                  </h3>
-                  <p className="text-primary text-sm font-medium uppercase font-sans">
-                    Customer Experience
-                  </p>
-                </div>
               </div>
             </div>
           </div>

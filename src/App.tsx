@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HomePage } from "@/pages/HomePage";
+import { ToursPage } from "@/pages/ToursPage";
 import { TourDetailsPage } from "@/pages/TourDetailsPage";
 import { AboutPage } from "@/pages/AboutPage";
 import { BookingPage } from "@/pages/BookingPage";
@@ -17,6 +18,7 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<HomePage />} />
+        <Route path="/tours" element={<ToursPage />} />
         <Route path="/tours/:id" element={<TourDetailsPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/booking" element={<BookingPage />} />

@@ -18,7 +18,7 @@ export function HeroSection() {
       >
         <div className="container mx-auto">
           <h1 className="text-3xl md:text-5xl font-bold text-white uppercase font-display tracking-wide mb-2 drop-shadow-lg">
-            Saigon Night Food Tour By Luxury Speedboat
+            Saigon Night Food Tour
           </h1>
           {/* Accent Line */}
           <div className="w-24 h-1 bg-primary mb-4"></div>
