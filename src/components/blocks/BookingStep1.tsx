@@ -13,20 +13,12 @@ interface BookingStep1Props {
   onNext: () => void;
 }
 
-function formatScheduleDate(iso?: string) {
-  if (!iso) return "TBD";
-  try {
-    return new Date(iso).toLocaleString("vi-VN", {
-      weekday: "short",
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return iso;
+function formatScheduleDate(timeStr?: string) {
+  if (!timeStr) return "TBD";
+  if (timeStr.length >= 5) {
+    return timeStr.slice(0, 5); // Return HH:mm
   }
+  return timeStr;
 }
 
 export function BookingStep1({ tourId, tour, form, onUpdateForm, onNext }: BookingStep1Props) {
@@ -56,6 +48,7 @@ export function BookingStep1({ tourId, tour, form, onUpdateForm, onNext }: Booki
   const validate = () => {
     const e: Record<string, string> = {};
     if (!form.scheduleId) e.scheduleId = "Please select a departure schedule.";
+    if (!form.dateTime) e.dateTime = "Please select a departure date.";
     if (!form.customerName.trim()) e.customerName = "Name is required.";
     if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Valid email is required.";
     if (!form.phone.trim()) e.phone = "Phone is required.";
@@ -112,14 +105,15 @@ export function BookingStep1({ tourId, tour, form, onUpdateForm, onNext }: Booki
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div>
-                        <p className="font-semibold text-foreground text-sm">
-                          {formatScheduleDate(sch.departureAt)}
+                        <p className="font-semibold text-foreground text-sm flex items-center gap-2">
+                          <CalendarDays className="w-4 h-4 text-primary" />
+                          Departure Time: <span className="text-xl tracking-wide">{formatScheduleDate(sch.departureAt)}</span>
                         </p>
                         {sch.scheduleNote && (
                           <p className="text-xs text-muted-foreground mt-1">{sch.scheduleNote}</p>
                         )}
                         <p className="text-xs text-muted-foreground mt-1">
-                          {sch.minPax ?? "?"} – {sch.maxPax ?? "∞"} guests
+                          {sch.minPax ?? "?"} – {sch.maxPax ?? "∞"} guests limit
                         </p>
                       </div>
                       {isSelected && (
@@ -136,6 +130,23 @@ export function BookingStep1({ tourId, tour, form, onUpdateForm, onNext }: Booki
               <AlertTriangle className="w-3.5 h-3.5" />{errors.scheduleId}
             </p>
           )}
+
+          {/* New Date Picker Input */}
+          <div className="mt-5 border-t border-border pt-5">
+            <label className="block text-sm font-semibold text-foreground mb-2">Select Departure Date *</label>
+            <input
+              type="date"
+              className={inputCls(errors.dateTime)}
+              value={form.dateTime}
+              min={new Date().toISOString().split("T")[0]}
+              onChange={(e) => onUpdateForm({ dateTime: e.target.value })}
+            />
+            {errors.dateTime && (
+              <p className="text-xs text-destructive mt-2 flex items-center gap-1">
+                 <AlertTriangle className="w-3.5 h-3.5" />{errors.dateTime}
+              </p>
+            )}
+          </div>
         </section>
 
         {/* Guest Count */}
@@ -260,7 +271,7 @@ export function BookingStep1({ tourId, tour, form, onUpdateForm, onNext }: Booki
                 <div>
                   <p className="text-xs text-muted-foreground">Schedule</p>
                   <p className="font-semibold text-foreground">
-                    {selectedSchedule ? formatScheduleDate(selectedSchedule.departureAt) : "Not selected"}
+                    {form.dateTime ? new Date(form.dateTime).toLocaleDateString() : "Date not chosen"} at {selectedSchedule ? formatScheduleDate(selectedSchedule.departureAt) : "Time not chosen"}
                   </p>
                 </div>
                 <div className="border-t border-border pt-3 space-y-1.5">

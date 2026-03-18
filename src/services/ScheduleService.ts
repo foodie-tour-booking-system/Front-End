@@ -12,6 +12,7 @@ export interface ScheduleRequest {
   maxPax?: number;
   departureAt?: string;
   scheduleStatus?: "ACTIVE" | "INACTIVE" | "DELETED" | "DRAFT";
+  isTemplate?: boolean;
 }
 
 export interface ScheduleResponse {
