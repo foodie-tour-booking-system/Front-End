@@ -49,7 +49,7 @@ function StatusBadge({ status }: { status?: string }) {
 function formatDate(iso?: string) {
   if (!iso) return "—";
   try {
-    return new Date(iso).toLocaleString("vi-VN", {
+    return new Date(iso).toLocaleString("en-US", {
       dateStyle: "short",
       timeStyle: "short",
     });

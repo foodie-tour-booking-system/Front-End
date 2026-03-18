@@ -3,7 +3,10 @@ import { Button } from "@/components/ui/button";
 import { ScheduleService, type ScheduleResponse } from "@/services/ScheduleService";
 import type { TourResponse } from "@/services/TourService";
 import type { BookingFormData } from "@/pages/BookingPage";
-import { CalendarDays, Users, MapPin, Loader2, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { CalendarDays, Users, MapPin, Loader2, AlertTriangle, Clock, CheckCircle2 } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { format, parseISO } from "date-fns";
+import { enUS } from "date-fns/locale";
 
 interface BookingStep1Props {
   tourId?: number;
@@ -16,16 +19,18 @@ interface BookingStep1Props {
 function formatScheduleDate(iso?: string) {
   if (!iso) return "TBD";
   try {
-    return new Date(iso).toLocaleString("vi-VN", {
-      weekday: "short",
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return format(parseISO(iso), "EEEE, do MMMM, yyyy", { locale: enUS });
   } catch {
     return iso;
+  }
+}
+
+function formatScheduleTime(iso?: string) {
+  if (!iso) return "";
+  try {
+    return format(parseISO(iso), "HH:mm");
+  } catch {
+    return "";
   }
 }
 
@@ -83,59 +88,95 @@ export function BookingStep1({ tourId, tour, form, onUpdateForm, onNext }: Booki
         <section className="bg-card rounded-2xl p-6 shadow-sm border border-border">
           <h2 className="text-xl font-bold mb-5 flex items-center gap-2 text-foreground">
             <CalendarDays className="w-5 h-5 text-primary" />
-            Select Departure Schedule
+            Select Departure Date
           </h2>
 
           {loadingSchedules ? (
-            <div className="flex items-center gap-2 text-muted-foreground py-6 justify-center">
+            <div className="flex items-center gap-2 text-muted-foreground py-12 justify-center">
               <Loader2 className="w-5 h-5 animate-spin text-primary" />
-              Loading available schedules…
+              Loading schedules...
             </div>
           ) : schedules.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <CalendarDays className="w-8 h-8 mx-auto mb-2 opacity-30" />
-              No available departure schedules for this tour.
+              No schedules available for this tour currently.
             </div>
           ) : (
-            <div className="grid gap-3">
-              {schedules.map((sch) => {
-                const isSelected = form.scheduleId === sch.scheduleId;
-                return (
-                  <button
-                    key={sch.scheduleId}
-                    onClick={() => onUpdateForm({ 
-                      scheduleId: sch.scheduleId!,
-                      date: sch.departureAt ? sch.departureAt.split('T')[0] : ""
-                    })}
-                    className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
-                      isSelected
-                        ? "border-primary bg-primary/10"
-                        : "border-border hover:border-primary/40 hover:bg-secondary/30"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="font-semibold text-foreground text-sm">
-                          {formatScheduleDate(sch.departureAt)}
-                        </p>
-                        {sch.scheduleNote && (
-                          <p className="text-xs text-muted-foreground mt-1">{sch.scheduleNote}</p>
-                        )}
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {sch.minPax ?? "?"} – {sch.maxPax ?? "∞"} guests
-                        </p>
-                      </div>
-                      {isSelected && (
-                        <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                      )}
+            <div className="flex flex-col md:flex-row gap-8 items-start">
+              {/* Left: Calendar */}
+              <div className="bg-secondary/20 p-6 rounded-2xl border border-border/50 shadow-inner">
+                <Calendar
+                  mode="single"
+                  selected={form.date ? parseISO(form.date) : undefined}
+                  onSelect={(d) => {
+                    if (d) {
+                      const dateStr = format(d, "yyyy-MM-dd");
+                      onUpdateForm({ date: dateStr, scheduleId: undefined });
+                    }
+                  }}
+                  disabled={(d) => {
+                    // Disable dates that don't have active schedules
+                    const dateStr = format(d, "yyyy-MM-dd");
+                    return !schedules.some((s) => s.departureAt?.startsWith(dateStr)) || d < new Date(new Date().setHours(0, 0, 0, 0));
+                  }}
+                  className="rounded-md border-none [--cell-size:2.8rem]"
+                />
+              </div>
+
+              {/* Right: Times slots for selected date */}
+              <div className="flex-1 w-full space-y-4">
+                {form.date ? (
+                  <>
+                    <h3 className="text-sm font-bold flex items-center gap-2 text-muted-foreground uppercase tracking-widest">
+                      <Clock className="w-4 h-4 text-primary" />
+                      Departure Time ({format(parseISO(form.date), "dd/MM/yyyy")})
+                    </h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      {schedules
+                        .filter((s) => s.departureAt?.startsWith(form.date))
+                        .map((sch) => {
+                          const isSelected = form.scheduleId === sch.scheduleId;
+                          return (
+                            <button
+                              key={sch.scheduleId}
+                              onClick={() => onUpdateForm({ scheduleId: sch.scheduleId! })}
+                              className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
+                                isSelected
+                                  ? "border-primary bg-primary/10 shadow-sm"
+                                  : "border-border hover:border-primary/40 hover:bg-secondary/30"
+                              }`}
+                            >
+                              <div className="flex items-center justify-between gap-3">
+                                <div>
+                                  <p className="font-bold text-lg text-foreground">
+                                    {formatScheduleTime(sch.departureAt)}
+                                  </p>
+                                  <p className="text-[10px] text-muted-foreground uppercase font-black tracking-tight mt-1">
+                                    {sch.minPax ?? "?"}-{sch.maxPax ?? "∞"} guests
+                                  </p>
+                                </div>
+                                {isSelected && (
+                                  <CheckCircle2 className="w-5 h-5 text-primary" />
+                                )}
+                              </div>
+                            </button>
+                          );
+                        })}
                     </div>
-                  </button>
-                );
-              })}
+                  </>
+                ) : (
+                  <div className="h-full flex flex-col items-center justify-center text-center p-8 bg-secondary/10 rounded-2xl border border-dashed border-border opacity-60">
+                    <CalendarDays className="w-10 h-10 mb-3 text-muted-foreground/30" />
+                    <p className="text-sm font-medium text-muted-foreground">
+                      Please select a date to view available times
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
           {errors.scheduleId && (
-            <p className="text-xs text-destructive mt-2 flex items-center gap-1">
+            <p className="text-xs text-destructive mt-4 flex items-center gap-1 font-medium bg-destructive/10 p-2 rounded-lg border border-destructive/20 animate-in slide-in-from-top-1">
               <AlertTriangle className="w-3.5 h-3.5" />{errors.scheduleId}
             </p>
           )}
@@ -263,7 +304,9 @@ export function BookingStep1({ tourId, tour, form, onUpdateForm, onNext }: Booki
                 <div>
                   <p className="text-xs text-muted-foreground">Schedule</p>
                   <p className="font-semibold text-foreground">
-                    {selectedSchedule ? formatScheduleDate(selectedSchedule.departureAt) : "Not selected"}
+                    {selectedSchedule 
+                      ? `${format(parseISO(selectedSchedule.departureAt!), "PPP", { locale: enUS })} at ${formatScheduleTime(selectedSchedule.departureAt)}` 
+                      : "Not selected"}
                   </p>
                 </div>
                 <div className="border-t border-border pt-3 space-y-1.5">

@@ -10,7 +10,7 @@ interface BookingStep3Props {
 function formatDate(iso?: string) {
   if (!iso) return "—";
   try {
-    return new Date(iso).toLocaleString("vi-VN", {
+    return new Date(iso).toLocaleString("en-US", {
       dateStyle: "medium",
       timeStyle: "short",
     });
@@ -121,7 +121,7 @@ export function BookingStep3({ bookingCode }: BookingStep3Props) {
             </div>
             <div>
               <p className="text-xs text-muted-foreground font-medium mb-0.5">Departure</p>
-              <p className="text-foreground font-semibold text-sm">{formatDate(booking?.date)}</p>
+              <p className="text-foreground font-semibold text-sm">{formatDate(booking?.departureTime)}</p>
               <p className="text-muted-foreground text-xs mt-0.5">Please arrive 15 mins early</p>
             </div>
           </div>

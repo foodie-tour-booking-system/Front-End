@@ -16,15 +16,15 @@ function formatDateTimeRange(startIso?: string, duration?: number) {
     const durMs = duration ? (duration > 24 ? duration * 60 * 1000 : duration * 60 * 60 * 1000) : 0;
     const end = durMs ? new Date(start.getTime() + durMs) : null;
     
-    const dateStr = start.toLocaleDateString("vi-VN", { dateStyle: "medium" });
-    const startTimeStr = start.toLocaleTimeString("vi-VN", { timeStyle: "short" });
+    const dateStr = start.toLocaleDateString("en-US", { dateStyle: "medium" });
+    const startTimeStr = start.toLocaleTimeString("en-US", { timeStyle: "short" });
     
     if (!end) return `${dateStr}, ${startTimeStr}`;
     
     if (start.getDate() === end.getDate()) {
-       return `${dateStr}, ${startTimeStr} - ${end.toLocaleTimeString("vi-VN", { timeStyle: "short" })}`;
+       return `${dateStr}, ${startTimeStr} - ${end.toLocaleTimeString("en-US", { timeStyle: "short" })}`;
     } else {
-       return `${startTimeStr} ${dateStr} - ${end.toLocaleTimeString("vi-VN", { timeStyle: "short" })} ${end.toLocaleDateString("vi-VN", { dateStyle: "medium" })}`;
+       return `${startTimeStr} ${dateStr} - ${end.toLocaleTimeString("en-US", { timeStyle: "short" })} ${end.toLocaleDateString("en-US", { dateStyle: "medium" })}`;
     }
   } catch {
     return startIso;
