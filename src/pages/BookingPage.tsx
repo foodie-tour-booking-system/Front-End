@@ -9,6 +9,7 @@ import { TourService, type TourResponse } from "@/services/TourService";
 
 export interface BookingFormData {
   scheduleId: number;
+  dateTime: string;
   adultCount: number;
   childrenCount: number;
   pickupLocation: string;
@@ -21,6 +22,7 @@ export interface BookingFormData {
 
 const DEFAULT_FORM: BookingFormData = {
   scheduleId: 0,
+  dateTime: "",
   adultCount: 1,
   childrenCount: 0,
   pickupLocation: "",

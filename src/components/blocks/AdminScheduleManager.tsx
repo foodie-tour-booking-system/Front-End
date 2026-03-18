@@ -15,7 +15,7 @@ import {
   X,
   Loader2,
   AlertTriangle,
-  CalendarDays,
+  Clock,
   Search,
 } from "lucide-react";
 
@@ -46,16 +46,12 @@ function StatusBadge({ status }: { status?: string }) {
   );
 }
 
-function formatDate(iso?: string) {
-  if (!iso) return "—";
-  try {
-    return new Date(iso).toLocaleString("vi-VN", {
-      dateStyle: "short",
-      timeStyle: "short",
-    });
-  } catch {
-    return iso;
+function formatTime(timeStr?: string) {
+  if (!timeStr) return "—";
+  if (timeStr.length >= 5) {
+    return timeStr.slice(0, 5);
   }
+  return timeStr;
 }
 
 // ─── Schedule Form Modal ──────────────────────────────────────────────────────
@@ -73,6 +69,7 @@ const EMPTY_FORM: ScheduleRequest = {
   scheduleNote: "",
   scheduleDescription: "",
   scheduleStatus: "DRAFT",
+  isTemplate: false,
 };
 
 interface ScheduleFormModalProps {
@@ -178,11 +175,11 @@ function ScheduleFormModal({ mode, initial, onClose, onSaved, editId, tours, rou
 
           {/* Departure */}
           <div>
-            <label className={labelCls}>Departure Date & Time</label>
+            <label className={labelCls}>Departure Time</label>
             <input
-              type="datetime-local"
+              type="time"
               className={inputCls}
-              value={form.departureAt ? form.departureAt.slice(0, 16) : ""}
+              value={form.departureAt ? form.departureAt.slice(0, 5) : ""}
               onChange={(e) => set("departureAt", e.target.value ? `${e.target.value}:00` : "")}
               disabled={loading}
             />
@@ -216,19 +213,33 @@ function ScheduleFormModal({ mode, initial, onClose, onSaved, editId, tours, rou
             </div>
           </div>
 
-          {/* Status */}
-          <div>
-            <label className={labelCls}>Status</label>
-            <select
-              className={`${inputCls} cursor-pointer`}
-              value={form.scheduleStatus ?? "DRAFT"}
-              onChange={(e) => set("scheduleStatus", e.target.value as ScheduleRequest["scheduleStatus"])}
-              disabled={loading}
-            >
-              {STATUS_OPTIONS.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
+          {/* Status and Template */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={labelCls}>Status</label>
+              <select
+                className={`${inputCls} cursor-pointer`}
+                value={form.scheduleStatus ?? "DRAFT"}
+                onChange={(e) => set("scheduleStatus", e.target.value as ScheduleRequest["scheduleStatus"])}
+                disabled={loading}
+              >
+                {STATUS_OPTIONS.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-center mt-6">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 text-primary border-border rounded focus:ring-primary"
+                  checked={form.isTemplate ?? false}
+                  onChange={(e) => set("isTemplate", e.target.checked)}
+                  disabled={loading}
+                />
+                <span className="text-sm font-semibold text-foreground">Save as Template</span>
+              </label>
+            </div>
           </div>
 
           {/* Note */}
@@ -389,6 +400,7 @@ export function AdminScheduleManager() {
             scheduleNote: modal.schedule.scheduleNote ?? "",
             scheduleDescription: modal.schedule.scheduleDescription ?? "",
             scheduleStatus: modal.schedule.scheduleStatus,
+            isTemplate: false,
           } : EMPTY_FORM}
           editId={modal.schedule?.scheduleId}
           onClose={closeModal}
@@ -508,8 +520,8 @@ export function AdminScheduleManager() {
                         {/* Departure */}
                         <td className="px-6 py-4 whitespace-nowrap hidden sm:table-cell text-sm text-foreground">
                           <div className="flex items-center gap-1.5">
-                            <CalendarDays className="w-3.5 h-3.5 text-muted-foreground" />
-                            {formatDate(sch.departureAt)}
+                            <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+                            {formatTime(sch.departureAt)}
                           </div>
                         </td>
                         {/* Pax */}
