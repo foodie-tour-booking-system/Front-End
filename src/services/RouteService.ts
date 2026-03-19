@@ -64,4 +64,13 @@ export const RouteService = {
     return data as RouteResponse;
   },
 
+  /**
+   * GET /api/routes/tour/{tourId}
+   */
+  getRouteByTourId: async (pathParams: { tourId: number }, queryParams?: { routeStatus?: string }): Promise<RouteResponse[]> => {
+    const { data, error } = await apiClient.GET("/api/routes/tour/{tourId}" as any, { params: { path: pathParams, query: queryParams } });
+    if (error) throw error;
+    return data as RouteResponse[];
+  },
+
 };

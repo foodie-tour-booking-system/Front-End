@@ -16,15 +16,6 @@ interface BookingStep1Props {
   onNext: () => void;
 }
 
-function formatScheduleDate(iso?: string) {
-  if (!iso) return "TBD";
-  try {
-    return format(parseISO(iso), "EEEE, do MMMM, yyyy", { locale: enUS });
-  } catch {
-    return iso;
-  }
-}
-
 function formatScheduleTime(iso?: string) {
   if (!iso) return "";
   try {
@@ -62,6 +53,7 @@ export function BookingStep1({ tourId, tour, form, onUpdateForm, onNext }: Booki
   const validate = () => {
     const e: Record<string, string> = {};
     if (!form.scheduleId) e.scheduleId = "Please select a departure schedule.";
+    if (!form.date) e.date = "Please select a departure date.";
     if (!form.customerName.trim()) e.customerName = "Name is required.";
     if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Valid email is required.";
     if (!form.phone.trim()) e.phone = "Phone is required.";
@@ -116,7 +108,6 @@ export function BookingStep1({ tourId, tour, form, onUpdateForm, onNext }: Booki
                     }
                   }}
                   disabled={(d) => {
-                    // Disable dates that don't have active schedules
                     const dateStr = format(d, "yyyy-MM-dd");
                     return !schedules.some((s) => s.departureAt?.startsWith(dateStr)) || d < new Date(new Date().setHours(0, 0, 0, 0));
                   }}
@@ -227,7 +218,6 @@ export function BookingStep1({ tourId, tour, form, onUpdateForm, onNext }: Booki
             </button>
           </div>
         </section>
-
 
         {/* Guest Count */}
         <section className="bg-card rounded-2xl p-6 shadow-sm border border-border">

@@ -10,13 +10,18 @@ import {
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { TourService, type TourResponse } from "@/services/TourService";
-import { TourImageService, type TourImageResponse } from "@/services/TourImageService";
+import {
+  TourImageService,
+  type TourImageResponse,
+} from "@/services/TourImageService";
+import { RouteService, type RouteResponse } from "@/services/RouteService";
 
 export function TourDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [tour, setTour] = useState<TourResponse | null>(null);
   const [images, setImages] = useState<TourImageResponse[]>([]);
+  const [routes, setRoutes] = useState<RouteResponse[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,30 +29,39 @@ export function TourDetailsPage() {
       setLoading(true);
       Promise.all([
         TourService.getTourById({ id: Number(id) }),
-        TourImageService.getImages({ tourId: Number(id) }).catch(() => [])
-      ]).then(([tourData, imagesData]) => {
-        setTour(tourData);
-        setImages(imagesData);
-      }).catch(err => {
-         console.error(err);
-      }).finally(() => setLoading(false));
+        TourImageService.getImages({ tourId: Number(id) }).catch(() => []),
+        RouteService.getRouteByTourId({ tourId: Number(id) }).catch(() => []),
+      ])
+        .then(([tourData, imagesData, routesData]) => {
+          setTour(tourData);
+          setImages(imagesData);
+          setRoutes(routesData);
+        })
+        .catch((err) => {
+          console.error(err);
+        })
+        .finally(() => setLoading(false));
     }
   }, [id]);
 
   if (loading || !tour) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
-         <Navbar />
-         <div className="flex-1 flex items-center justify-center min-h-[50vh]">
-            <span className="text-muted-foreground animate-pulse p-8">Loading tour details...</span>
-         </div>
-         <Footer />
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center min-h-[50vh]">
+          <span className="text-muted-foreground animate-pulse p-8">
+            Loading tour details...
+          </span>
+        </div>
+        <Footer />
       </div>
     );
   }
 
-  const primaryImage = images.find(img => img.isPrimary) || images[0];
-  const heroImage = primaryImage?.imageUrl || "https://lh3.googleusercontent.com/aida-public/AB6AXuDMbDjex6LvdbBnwfYAPaAZAGMczXuHOY96rYCCJ_s3xQWINYZAYMg3pFyUDYmxNOhkV0OP1x7iQmcOGs6keK6pad6pkd8GGRNnUg8Yn1HN_9pSxFv6jRGIMhVPLI1MkKxqY9fVtI7T05QbBYJ0SH3LAxQwLzEUcJ9rIqT5J9j6FvAT4TfnyaL1LDHq_itP9dvkktBkIBRNGlwIBTwCWZwHEMuXPu-twmKCh6eFBExLQQhMwXX5cLVIg1dDiq54dJvizGiZE2AIi_ge";
+  const primaryImage = images.find((img) => img.isPrimary) || images[0];
+  const heroImage =
+    primaryImage?.imageUrl ||
+    "https://lh3.googleusercontent.com/aida-public/AB6AXuDMbDjex6LvdbBnwfYAPaAZAGMczXuHOY96rYCCJ_s3xQWINYZAYMg3pFyUDYmxNOhkV0OP1x7iQmcOGs6keK6pad6pkd8GGRNnUg8Yn1HN_9pSxFv6jRGIMhVPLI1MkKxqY9fVtI7T05QbBYJ0SH3LAxQwLzEUcJ9rIqT5J9j6FvAT4TfnyaL1LDHq_itP9dvkktBkIBRNGlwIBTwCWZwHEMuXPu-twmKCh6eFBExLQQhMwXX5cLVIg1dDiq54dJvizGiZE2AIi_ge";
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans">
@@ -98,9 +112,7 @@ export function TourDetailsPage() {
               Tours
             </span>{" "}
             <span className="mx-1">&gt;</span>
-            <span className="font-bold text-foreground">
-              {tour.tourName}
-            </span>
+            <span className="font-bold text-foreground">{tour.tourName}</span>
           </div>
         </div>
       </div>
@@ -109,53 +121,11 @@ export function TourDetailsPage() {
         <main className="w-full lg:w-3/4 pr-0 lg:pr-8">
           <section className="mb-12">
             <h2 className="text-xl font-bold uppercase mb-6 text-foreground border-b-2 border-border pb-2 inline-block">
-              What To Expect
-            </h2>
-            <div className="bg-card p-6 rounded shadow-sm border border-border space-y-4 text-sm leading-relaxed text-muted-foreground">
-              <p>
-                <strong className="text-foreground">
-                  Sunset Cruise on Saigon River:
-                </strong>{" "}
-                Start your evening with a breathtaking sunset view of the Ho Chi
-                Minh City skyline from the comfort of our luxury speedboat.
-              </p>
-              <p>
-                <strong className="text-foreground">
-                  Authentic Street Food Adventure:
-                </strong>{" "}
-                Venture off the beaten path to taste the best local dishes that
-                defined Saigon's culinary scene, guided by our food experts.
-              </p>
-              <p>
-                <strong className="text-foreground">Cultural Immersion:</strong>{" "}
-                Learn about the history and culture of the city through its
-                food, visiting vibrant night markets and hidden alleyways.
-              </p>
-              <p>
-                <strong className="text-foreground">
-                  Riverside Dining Experience:
-                </strong>{" "}
-                Conclude your tour with a relaxed, romantic dinner at a
-                riverside restaurant, enjoying traditional delicacies.
-              </p>
-              <p>
-                <strong className="text-foreground">Seamless Comfort:</strong>{" "}
-                Includes round-trip hotel pickup, unlimited refreshments on
-                board, and English-speaking guides ensuring a worry-free
-                evening.
-              </p>
-            </div>
-          </section>
-
-          <section className="mb-12">
-            <h2 className="text-xl font-bold uppercase mb-6 text-foreground border-b-2 border-border pb-2 inline-block">
               Overview
             </h2>
             <div className="flex flex-col md:flex-row gap-4 mb-6 text-sm font-bold">
               <div className="flex items-center">
-                <span className="mr-2 text-muted-foreground">
-                  Duration:
-                </span>
+                <span className="mr-2 text-muted-foreground">Duration:</span>
                 <span className="bg-primary text-primary-foreground px-3 py-1 rounded">
                   {tour.duration} hours
                 </span>
@@ -177,87 +147,45 @@ export function TourDetailsPage() {
             <h2 className="text-xl font-bold uppercase mb-6 text-foreground border-b-2 border-border pb-2 inline-block">
               Itinerary
             </h2>
-            <div className="bg-card p-6 rounded shadow-sm border border-border space-y-6 text-sm">
-              <div>
-                <p className="font-bold italic mb-2 text-foreground">
-                  Evening Program (4 hours)
-                </p>
-                <div className="space-y-4 text-muted-foreground">
-                  <p>
-                    <strong className="text-foreground">4:30 PM:</strong> Les
-                    Rives guide will meet you at your hotel's lobby and bring
-                    you by car to our pier at Bach Dang.
-                  </p>
-                  <p>
-                    <strong className="text-foreground">5:00 PM:</strong> Depart
-                    by luxury speedboat. Enjoy a complimentary cocktail as you
-                    watch the sunset over the Saigon River. The guide will point
-                    out significant landmarks along the way.
-                  </p>
-                  <p>
-                    <strong className="text-foreground">5:45 PM:</strong> Arrive
-                    at the first destination. Take a short walk through a local
-                    market to see fresh ingredients being sold for evening
-                    meals.
-                  </p>
-                  <p>
-                    <strong className="text-foreground">6:30 PM:</strong> First
-                    food stop. Enjoy "Banh Xeo" and fresh spring rolls at a
-                    famous local eatery that has been serving for over 30 years.
-                  </p>
-                  <p>
-                    <strong className="text-foreground">7:30 PM:</strong>{" "}
-                    Continue by boat to a quieter district. Visit a hidden gem
-                    for Vietnamese BBQ or seafood, a favorite pastime for
-                    locals.
-                  </p>
-                  <p>
-                    <strong className="text-foreground">8:30 PM:</strong>{" "}
-                    Dessert time. Try sweet soup (Che) or flan cake before
-                    heading back to the boat.
-                  </p>
-                  <p>
-                    <strong className="text-foreground">9:00 PM:</strong> Arrive
-                    back at Bach Dang pier. Our staff will transfer you back to
-                    your hotel.
-                  </p>
-                </div>
+            {routes.length > 0 ? (
+              <div className="space-y-8">
+                {routes.map((route, routeIdx) => (
+                  <div key={route.routeId || routeIdx} className="bg-card p-6 rounded shadow-sm border border-border space-y-4 text-sm">
+                    <p className="font-bold mb-2 text-foreground text-lg border-b border-border pb-2 inline-block">
+                      {route.routeName}
+                    </p>
+
+                    {route.routeDetails && route.routeDetails.length > 0 ? (
+                      <div className="space-y-6 pt-2">
+                        {route.routeDetails.sort((a, b) => (a.locationOrder || 0) - (b.locationOrder || 0)).map((detail, idx) => (
+                          <div key={idx} className="flex gap-4 items-start pl-2 border-l-2 border-primary/30 relative">
+                             <div className="absolute w-3 h-3 bg-primary rounded-full -left-[7px] top-1.5 shadow" />
+                             <div className="flex-1">
+                                <h3 className="font-bold text-foreground text-base mb-1">
+                                  Stop {detail.locationOrder}: {detail.locationName}
+                                </h3>
+                                {detail.durationAtLocation && (
+                                   <span className="inline-block text-xs font-semibold text-primary/80 uppercase tracking-wider bg-primary/10 px-2 py-0.5 rounded mt-1">
+                                     Duration: {detail.durationAtLocation} min
+                                   </span>
+                                )}
+                             </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground italic mt-2">No details available for this route.</p>
+                    )}
+                  </div>
+                ))}
               </div>
-            </div>
+            ) : (
+              <div className="bg-card p-6 rounded shadow-sm border border-border text-center text-muted-foreground italic text-sm">
+                No itinerary information available at the moment.
+              </div>
+            )}
           </section>
 
-          <section className="mb-12">
-            <h2 className="text-xl font-bold uppercase mb-6 text-foreground border-b-2 border-border pb-2 inline-block">
-              Saigon Night Food Tour FAQ
-            </h2>
-            <Accordion type="single" collapsible className="w-full">
-              <AccordionItem value="item-1">
-                <AccordionTrigger>Is the food spicy?</AccordionTrigger>
-                <AccordionContent>
-                  Vietnamese food can be spicy, but on this tour, dishes are
-                  generally mild. Chilli and sauces are usually served on the
-                  side so you can adjust the spice level to your liking.
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="item-2">
-                <AccordionTrigger>What happens if it rains?</AccordionTrigger>
-                <AccordionContent>
-                  Our speedboats have roofs and rain covers to keep you dry.
-                  Rain in Saigon is often short-lived. We also provide ponchos
-                  if needed during the walking portions.
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="item-3">
-                <AccordionTrigger>
-                  Are vegetarian options available?
-                </AccordionTrigger>
-                <AccordionContent>
-                  Yes! Please inform us when booking, and we will arrange a
-                  delicious vegetarian menu for you at each stop.
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-          </section>
         </main>
 
         <aside className="w-full lg:w-1/4">

@@ -37,7 +37,7 @@ export function Navbar() {
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <Link to="/" className="flex items-center gap-2">
           <div className="text-2xl font-display font-bold text-foreground tracking-widest uppercase">
-            Les Rives
+            Foodie Tour
           </div>
         </Link>
         <nav className="hidden md:flex items-center gap-6">

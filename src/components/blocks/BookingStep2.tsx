@@ -43,6 +43,7 @@ export function BookingStep2({ tour, form, onUpdateForm, onBack, onNext }: Booki
     try {
       // 1. Create booking
       const booking = await BookingService.createBooking({
+        tourId: tour?.tourId,
         scheduleId: form.scheduleId,
         date: form.date,
         customerName: form.customerName,
@@ -52,6 +53,7 @@ export function BookingStep2({ tour, form, onUpdateForm, onBack, onNext }: Booki
         childrenCount: form.childrenCount,
         pickupLocation: form.pickupLocation,
         customerNote: form.customerNote,
+        deposit: false,
         paymentMethod: form.paymentMethod,
         tourType: form.tourType,
       });

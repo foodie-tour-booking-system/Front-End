@@ -4,15 +4,17 @@
 import { apiClient } from "../lib/apiClient.ts";
 
 export interface BookingCreateRequest {
+  tourId?: number;
   scheduleId?: number;
+  date?: string;
   customerName?: string;
   email?: string;
   phone?: string;
-  date?: string;
   adultCount?: number;
   childrenCount?: number;
   pickupLocation?: string;
   customerNote?: string;
+  deposit?: boolean;
   paymentMethod?: "VNPAY" | "VISA";
   tourType?: "GROUP" | "PRIVATE";
 }
