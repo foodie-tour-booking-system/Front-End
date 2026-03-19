@@ -4,10 +4,12 @@
 import { apiClient } from "../lib/apiClient.ts";
 
 export interface RouteDetailRequest {
+  routeDetailId?: number;
   locationName?: string;
   locationOrder?: number;
   durationAtLocation?: number;
   routeDetailStatus?: "ACTIVE" | "INACTIVE" | "DELETED" | "DRAFT";
+  imageUrls?: string[];
 }
 
 export interface RouteRequest {
@@ -25,6 +27,7 @@ export interface RouteResponse {
   createdAt?: string;
   updatedAt?: string;
 }
+
 
 
 export const RouteService = {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Footer } from "@/components/blocks/Footer";
 import { Navbar } from "@/components/blocks/Navbar";
 import { TourService, type TourResponse } from "@/services/TourService";
@@ -8,6 +8,7 @@ import { FeaturedTourCard } from "@/components/blocks/FeaturedTourCard";
 
 export function HomePage() {
   const [featuredTours, setFeaturedTours] = useState<TourResponse[]>([]);
+  const carouselRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     TourService.getAllTours()
@@ -18,6 +19,13 @@ export function HomePage() {
       })
       .catch(console.error);
   }, []);
+
+  const scroll = (dir: "left" | "right") => {
+    const el = carouselRef.current;
+    if (!el) return;
+    const cardWidth = el.querySelector("a")?.clientWidth ?? 700;
+    el.scrollBy({ left: dir === "right" ? cardWidth + 24 : -(cardWidth + 24), behavior: "smooth" });
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-white">
@@ -90,31 +98,63 @@ export function HomePage() {
       </header>
 
       {/* Featured Experiences */}
-      <section className="py-16 bg-secondary/30 border-y border-border">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl font-display font-bold uppercase text-foreground tracking-wide">
-              Featured Culinary Experiences
-            </h2>
-            <div className="w-12 h-1 bg-primary mx-auto mt-4 mb-8"></div>
+      <section className="py-16 bg-white border-y border-border">
+        <div className="text-center mb-10 px-4">
+          <h2 className="text-2xl font-display font-bold uppercase text-foreground tracking-wide">
+            Featured Culinary Experiences
+          </h2>
+          <div className="w-12 h-1 bg-primary mx-auto mt-4 mb-2"></div>
+        </div>
+
+        {/* Carousel with arrow buttons */}
+        <div className="relative group/carousel">
+          {/* Prev */}
+          <button
+            onClick={() => scroll("left")}
+            aria-label="Previous"
+            className="
+              absolute left-3 top-1/2 -translate-y-1/2 z-20
+              w-12 h-12 rounded-full bg-white shadow-lg border border-border
+              flex items-center justify-center text-2xl text-foreground
+              opacity-0 group-hover/carousel:opacity-100
+              hover:bg-primary hover:text-primary-foreground hover:border-primary
+              transition-all duration-200 hover:scale-110
+            "
+          >
+            ‹
+          </button>
+
+          <div
+            ref={carouselRef}
+            className="flex overflow-x-auto gap-6 pb-8 snap-x snap-mandatory px-[12vw]"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
+          >
+            {featuredTours.length > 0 ? (
+              featuredTours.map((tour) => (
+                <FeaturedTourCard key={tour.tourId} tour={tour} />
+              ))
+            ) : (
+              <div className="w-full text-center py-12 text-muted-foreground bg-card rounded border border-border border-dashed h-56 flex items-center justify-center">
+                Loading amazing experiences...
+              </div>
+            )}
           </div>
 
-          <div className="relative mt-12">
-            <div
-              className="flex overflow-x-auto gap-6 pb-8 snap-x"
-              style={{ scrollbarWidth: "none" }}
-            >
-              {featuredTours.length > 0 ? (
-                featuredTours.map(tour => (
-                  <FeaturedTourCard key={tour.tourId} tour={tour} />
-                ))
-              ) : (
-                <div className="w-full text-center py-12 text-muted-foreground bg-card rounded border border-border border-dashed h-56 flex items-center justify-center">
-                  Loading amazing experiences...
-                </div>
-              )}
-            </div>
-          </div>
+          {/* Next */}
+          <button
+            onClick={() => scroll("right")}
+            aria-label="Next"
+            className="
+              absolute right-3 top-1/2 -translate-y-1/2 z-20
+              w-12 h-12 rounded-full bg-white shadow-lg border border-border
+              flex items-center justify-center text-2xl text-foreground
+              opacity-0 group-hover/carousel:opacity-100
+              hover:bg-primary hover:text-primary-foreground hover:border-primary
+              transition-all duration-200 hover:scale-110
+            "
+          >
+            ›
+          </button>
         </div>
       </section>
 
