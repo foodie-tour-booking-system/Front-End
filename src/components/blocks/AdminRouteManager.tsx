@@ -548,7 +548,7 @@ export function AdminRouteManager() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {routes.map((route) => (
+              {[...routes].sort((a, b) => (a.routeId ?? 0) - (b.routeId ?? 0)).map((route) => (
                 <RouteCard
                   key={route.routeId}
                   route={route}

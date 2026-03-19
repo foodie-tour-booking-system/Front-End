@@ -425,9 +425,9 @@ export function AdminBookingManager() {
     }
   }, [activeTab]);
 
-  const filteredRelocate = relocateFilter
-    ? relocateRequests.filter((r) => r.relocateRequestStatus === relocateFilter)
-    : relocateRequests;
+  const filteredRelocate = [...relocateRequests]
+    .filter((r) => !relocateFilter || r.relocateRequestStatus === relocateFilter)
+    .sort((a, b) => (a.relocateRequestId ?? 0) - (b.relocateRequestId ?? 0));
 
   return (
     <>

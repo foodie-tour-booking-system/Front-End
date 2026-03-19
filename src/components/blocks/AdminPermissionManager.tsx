@@ -214,11 +214,13 @@ export function AdminPermissionManager() {
     searchTimer.current = setTimeout(() => {}, 0);
   };
 
-  const filtered = permissions.filter((p) => {
-    if (!search.trim()) return true;
-    const q = search.toLowerCase();
-    return p.name?.toLowerCase().includes(q) || p.description?.toLowerCase().includes(q);
-  });
+  const filtered = permissions
+    .filter((p) => {
+      if (!search.trim()) return true;
+      const q = search.toLowerCase();
+      return p.name?.toLowerCase().includes(q) || p.description?.toLowerCase().includes(q);
+    })
+    .sort((a, b) => (a.permissionId ?? 0) - (b.permissionId ?? 0));
 
   const refresh = () => fetchPermissions(statusFilter || undefined);
   const closeModal = () => setModal(null);

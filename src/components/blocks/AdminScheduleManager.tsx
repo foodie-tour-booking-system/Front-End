@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ScheduleService,
   type ScheduleRequest,
@@ -10,10 +10,10 @@ import { TourService, type TourResponse } from "@/services/TourService";
 import { RouteService, type RouteResponse } from "@/services/RouteService";
 import {
   Plus,
-  Trash2,
   Pencil,
-  X,
+  Trash2,
   Loader2,
+  X,
   AlertTriangle,
   Clock,
   Search,
@@ -414,9 +414,7 @@ export function AdminScheduleManager() {
   const [schedules, setSchedules] = useState<ScheduleResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("");
-  const [tourIdFilter, setTourIdFilter] = useState("");
-  const [typeFilter, setTypeFilter] = useState<"ALL" | "SCHEDULE" | "TEMPLATE">("SCHEDULE");
-
+  const [idFilter, setIdFilter] = useState("");
   // Name lookup lists for modals and table display
   const [tours, setTours] = useState<TourResponse[]>([]);
   const [routes, setRoutes] = useState<RouteResponse[]>([]);
@@ -427,14 +425,13 @@ export function AdminScheduleManager() {
   const [modal, setModal] = useState<null | { mode: ModalMode; schedule?: ScheduleResponse }>(null);
   const [deleteTarget, setDeleteTarget] = useState<ScheduleResponse | null>(null);
 
-  const searchTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  const fetchSchedules = async (tourId?: string, status?: string) => {
+  const fetchSchedules = async (status?: string, id?: string) => {
     setLoading(true);
     try {
-      const query: { tourId?: number; scheduleStatus?: string } = {};
-      if (tourId && tourId.trim()) query.tourId = Number(tourId);
+      const query: { scheduleStatus?: string; scheduleId?: number } = {};
       if (status) query.scheduleStatus = status;
+      if (id && id.trim()) query.scheduleId = Number(id);
       const result = await ScheduleService.getSchedules(query);
       setSchedules(result);
     } catch (err) {
@@ -445,27 +442,22 @@ export function AdminScheduleManager() {
   };
 
   useEffect(() => {
-    fetchSchedules(tourIdFilter, statusFilter || undefined);
+    fetchSchedules(statusFilter || undefined, idFilter || undefined);
     TourService.getAllTours().then(setTours).catch(console.error);
     RouteService.getAllRoutes().then(setRoutes).catch(console.error);
   }, [statusFilter]);
 
-  const handleTourIdChange = (val: string) => {
-    setTourIdFilter(val);
-    clearTimeout(searchTimer.current);
-    searchTimer.current = setTimeout(() => {
-      fetchSchedules(val, statusFilter || undefined);
-    }, 400);
-  };
 
   const closeModal = () => setModal(null);
-  const refresh = () => fetchSchedules(tourIdFilter, statusFilter || undefined);
+  const refresh = () => fetchSchedules(statusFilter || undefined, idFilter || undefined);
 
-  const filteredSchedules = schedules.filter((sch) => {
-    if (typeFilter === "SCHEDULE") return !sch.isTemplate;
-    if (typeFilter === "TEMPLATE") return !!sch.isTemplate;
-    return true;
-  });
+  const handleIdSearch = (val: string) => {
+    setIdFilter(val);
+    fetchSchedules(statusFilter || undefined, val);
+  };
+
+  const filteredSchedules = [...schedules]
+    .sort((a, b) => (a.scheduleId ?? 0) - (b.scheduleId ?? 0));
 
   return (
     <>
@@ -505,59 +497,51 @@ export function AdminScheduleManager() {
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 animate-in fade-in duration-500">
 
           {/* Page Header */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
             <div>
-              <h2 className="text-3xl font-black text-foreground tracking-tight mb-1">Schedule Manager</h2>
-              <p className="text-muted-foreground text-base">Create and manage tour departure schedules.</p>
+              <h2 className="text-3xl font-black text-foreground tracking-tight mb-1 font-outfit uppercase">Schedule Manager</h2>
+              <p className="text-muted-foreground text-base">Create and manage departure schedules for tours.</p>
             </div>
-            <Button onClick={() => setModal({ mode: "create" })} className="font-bold py-2.5 px-5 text-primary-foreground flex items-center gap-2">
-              <Plus className="w-4 h-4" />
-              Create Schedule
+            <Button
+              onClick={() => setModal({ mode: "create" })}
+              className="gap-2 font-black text-primary-foreground min-w-[160px] shadow-xl hover:scale-105 transition-transform"
+            >
+              <Plus className="w-5 h-5 stroke-[3]" />
+              ADD NEW
             </Button>
           </div>
 
           {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="relative flex-1 max-w-xs">
+          <div className="flex flex-col md:flex-row gap-4 items-center mb-10">
+            {/* ID Search */}
+            <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
               <Input
-                className="pl-10 h-11"
-                placeholder="Filter by Tour ID..."
-                value={tourIdFilter}
-                onChange={(e) => handleTourIdChange(e.target.value)}
-                type="number"
+                className="pl-10 h-11 bg-card border-border/60"
+                placeholder="Search by ID..."
+                value={idFilter}
+                onChange={(e) => handleIdSearch(e.target.value)}
               />
             </div>
-            <div className="flex gap-2 flex-wrap">
-              {["", "ACTIVE", "INACTIVE", "DRAFT"].map((s) => (
+
+            {/* Status Filter Buttons */}
+            <div className="flex bg-secondary/30 p-1 rounded-2xl border border-border shadow-sm">
+              {[
+                { label: "ALL", value: "" },
+                { label: "Active", value: "ACTIVE" },
+                { label: "Inactive", value: "INACTIVE" },
+                { label: "Draft", value: "DRAFT" },
+              ].map((s) => (
                 <button
-                  key={s}
-                  onClick={() => setStatusFilter(s)}
-                  className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-colors ${
-                    statusFilter === s
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "border-border text-muted-foreground hover:text-foreground hover:border-foreground"
+                  key={s.value}
+                  onClick={() => setStatusFilter(s.value)}
+                  className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${
+                    statusFilter === s.value
+                      ? "bg-card text-foreground shadow-md border border-border scale-[1.02]"
+                      : "text-muted-foreground hover:text-foreground hover:bg-white/5"
                   }`}
                 >
-                  {s === "" ? "All Status" : s}
-                </button>
-              ))}
-            </div>
-
-            <div className="h-8 w-[1px] bg-border self-center hidden sm:block mx-2" />
-
-            <div className="flex gap-2 flex-wrap bg-secondary/30 p-1 rounded-xl border border-border">
-              {(["ALL", "SCHEDULE", "TEMPLATE"] as const).map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setTypeFilter(t)}
-                  className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${
-                    typeFilter === t
-                      ? "bg-card text-foreground shadow-sm border-border"
-                      : "text-muted-foreground hover:text-foreground border-transparent"
-                  } border`}
-                >
-                  {t === "ALL" ? "All Types" : t === "SCHEDULE" ? "Departures" : "Templates"}
+                  {s.label}
                 </button>
               ))}
             </div>
@@ -684,7 +668,7 @@ export function AdminScheduleManager() {
             </div>
             {!loading && filteredSchedules.length > 0 && (
               <div className="px-6 py-3 border-t border-border bg-secondary/20 text-xs text-muted-foreground">
-                Displaying {filteredSchedules.length} {typeFilter.toLowerCase()}{filteredSchedules.length !== 1 ? "s" : ""}
+                Displaying {filteredSchedules.length} schedule{filteredSchedules.length !== 1 ? "s" : ""}
               </div>
             )}
           </div>
