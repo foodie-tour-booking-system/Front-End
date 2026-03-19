@@ -11,6 +11,7 @@ import { ResetPasswordPage } from "@/pages/ResetPasswordPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { RegisterPage } from "@/pages/RegisterPage";
 import { TrackingPage } from "@/pages/TrackingPage";
+import { VnPayResultPage } from "@/pages/VnPayResultPage";
 import { ProtectedRoute } from "./components/routes/ProtectedRoute";
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
         <Route path="/booking" element={<BookingPage />} />
         <Route path="/tracking" element={<TrackingPage />} />
         <Route path="/tracking/:bookingCode" element={<TrackingPage />} />
+        <Route path="/payment/vnpay/result" element={<VnPayResultPage />} />
 
         {/* Auth Routes */}
         <Route path="/login" element={<LoginPage />} />

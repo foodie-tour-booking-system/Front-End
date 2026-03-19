@@ -498,7 +498,7 @@ export function AdminRoleManager() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {roles.map((role) => (
+              {[...roles].sort((a, b) => (a.roleId ?? 0) - (b.roleId ?? 0)).map((role) => (
                 <div
                   key={role.roleId}
                   className="bg-card border border-border rounded-xl p-5 shadow-sm hover:shadow-md hover:border-primary/40 transition-all group"

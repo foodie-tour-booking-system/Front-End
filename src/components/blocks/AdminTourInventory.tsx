@@ -1,10 +1,20 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useEffect, useRef, useState } from "react";
 import { TourService, type TourRequest, type TourResponse } from "@/services/TourService";
 import { TourImageService, type TourImageResponse } from "@/services/TourImageService";
 import { ImageService } from "@/services/ImageService";
-import { Pencil, Trash2, X, Loader2, Plus, Search, AlertTriangle, ImageIcon, Star, Upload, RefreshCcw } from "lucide-react";
+import {
+  Pencil,
+  Trash2,
+  X,
+  Loader2,
+  Plus,
+  AlertTriangle,
+  ImageIcon,
+  Star,
+  Upload,
+  RefreshCcw,
+} from "lucide-react";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -597,30 +607,20 @@ function DeleteConfirmModal({ tour, onClose, onDeleted }: DeleteConfirmModalProp
 export function AdminTourInventory() {
   const [tours, setTours] = useState<TourResponse[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchValue, setSearchValue] = useState("");
 
   // Modal state
   const [modal, setModal] = useState<null | { mode: ModalMode; tour?: TourResponse }>(null);
   const [deleteTarget, setDeleteTarget] = useState<TourResponse | null>(null);
   const [imageManagerTour, setImageManagerTour] = useState<TourResponse | null>(null);
 
-  const searchTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // ── Fetch ──────────────────────────────────────────────────────────────────
 
-  const fetchTours = async (search?: string) => {
+  const fetchTours = async () => {
     setLoading(true);
     try {
-      if (search && search.trim()) {
-        const result = await TourService.searchTour({
-          tourName: search.trim(),
-          pageable: { page: 0, size: 100 },
-        });
-        setTours(result.content ?? []);
-      } else {
-        const result = await TourService.getAllTours();
-        setTours(result);
-      }
+      const result = await TourService.getAllTours();
+      setTours(result);
     } catch (err) {
       console.error("Failed to fetch tours:", err);
     } finally {
@@ -631,16 +631,6 @@ export function AdminTourInventory() {
   useEffect(() => {
     fetchTours();
   }, []);
-
-  // ── Search (debounce 400ms) ────────────────────────────────────────────────
-
-  const handleSearchChange = (value: string) => {
-    setSearchValue(value);
-    clearTimeout(searchTimer.current);
-    searchTimer.current = setTimeout(() => {
-      fetchTours(value);
-    }, 400);
-  };
 
   // ── Handlers ───────────────────────────────────────────────────────────────
 
@@ -654,8 +644,10 @@ export function AdminTourInventory() {
   const openImageManager = (tour: TourResponse) => setImageManagerTour(tour);
   const closeImageManager = () => setImageManagerTour(null);
 
-  const onSaved = () => fetchTours(searchValue);
-  const onDeleted = () => fetchTours(searchValue);
+  const onSaved = () => fetchTours();
+  const onDeleted = () => fetchTours();
+ 
+  const sortedTours = [...tours].sort((a, b) => (a.tourId ?? 0) - (b.tourId ?? 0));
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
@@ -713,18 +705,6 @@ export function AdminTourInventory() {
             </Button>
           </div>
 
-          {/* Search Bar */}
-          <div className="flex flex-col lg:flex-row gap-4 mb-6">
-            <div className="relative flex-1 group">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-              <Input
-                className="pl-10 h-11"
-                placeholder="Search tours by name..."
-                value={searchValue}
-                onChange={(e) => handleSearchChange(e.target.value)}
-              />
-            </div>
-          </div>
 
           {/* Tour Table */}
           <div className="bg-card shadow-sm border border-border rounded-xl overflow-hidden">
@@ -763,7 +743,7 @@ export function AdminTourInventory() {
                       </td>
                     </tr>
                   ) : (
-                    tours.map((tour) => (
+                    sortedTours.map((tour) => (
                       <tr key={tour.tourId} className="hover:bg-secondary/30 transition-colors group">
                         {/* Tour Info */}
                         <td className="px-6 py-4 whitespace-nowrap">

@@ -1,9 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
-  Search,
   Plus,
-  ChevronDown,
   Pencil,
   Trash2,
   Loader2,
@@ -13,7 +10,7 @@ import {
   UserCheck,
   UserX,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   EmployeeService,
   type EmployeeCreateRequest,
@@ -61,12 +58,6 @@ interface FormModalProps {
   onSaved: () => void;
 }
 
-const EMPTY_CREATE: EmployeeCreateRequest = {
-  employeeName: "",
-  email: "",
-  phone: "",
-  roleId: 0,
-};
 
 function EmployeeFormModal({ mode, initial, onClose, onSaved }: FormModalProps) {
   const [form, setForm] = useState<EmployeeCreateRequest>({
@@ -396,7 +387,6 @@ function ChangeRoleModal({ employee, onClose, onDone }: ChangeRoleModalProps) {
 
 interface AdminEmployeeDirectoryProps {
   onNavigateToPermissions: (userId: string) => void;
-  onNavigateToEdit: (userId: string) => void;
 }
 
 type StatusFilter = "" | "ACTIVE" | "INACTIVE" | "DELETED";
@@ -410,15 +400,12 @@ type ModalState =
 
 export function AdminEmployeeDirectory({
   onNavigateToPermissions,
-  onNavigateToEdit,
 }: AdminEmployeeDirectoryProps) {
   const [employees, setEmployees] = useState<EmployeeResponse[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchValue, setSearchValue] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("");
   const [modal, setModal] = useState<ModalState>(null);
 
-  const searchTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // ── Fetch ────────────────────────────────────────────────────────────────────
 
@@ -442,21 +429,9 @@ export function AdminEmployeeDirectory({
 
   // ── Search (client-side filter) ──────────────────────────────────────────────
 
-  const handleSearchChange = (value: string) => {
-    setSearchValue(value);
-    clearTimeout(searchTimer.current);
-    searchTimer.current = setTimeout(() => {}, 0); // debounce placeholder
-  };
 
-  const filtered = employees.filter((e) => {
-    if (!searchValue.trim()) return true;
-    const q = searchValue.toLowerCase();
-    return (
-      e.employeeName?.toLowerCase().includes(q) ||
-      e.email?.toLowerCase().includes(q) ||
-      e.phone?.toLowerCase().includes(q)
-    );
-  });
+  const filtered = employees
+    .sort((a, b) => (a.employeeId ?? 0) - (b.employeeId ?? 0));
 
   // ── Handlers ─────────────────────────────────────────────────────────────────
 
@@ -516,34 +491,26 @@ export function AdminEmployeeDirectory({
             </Button>
           </div>
 
-          {/* Search & Filter Toolbar */}
-          <div className="bg-card p-4 rounded-xl shadow-sm border border-border flex flex-col md:flex-row gap-4 items-center">
-            {/* Search */}
-            <div className="relative flex-1 w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input
-                className="pl-10 h-11"
-                type="text"
-                placeholder="Search by name, email or phone..."
-                value={searchValue}
-                onChange={(e) => handleSearchChange(e.target.value)}
-              />
-            </div>
-
-            {/* Status Filter */}
-            <div className="relative min-w-[160px]">
-              <select
-                className="appearance-none w-full bg-secondary border-transparent text-foreground py-2.5 pl-4 pr-10 rounded-lg text-sm font-medium focus:ring-1 focus:ring-primary cursor-pointer outline-none h-11"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+          {/* Status Filter Buttons */}
+          <div className="flex bg-secondary/40 p-1 rounded-2xl border border-border shadow-sm w-fit mb-4">
+            {[
+              { label: "All Employees", value: "" },
+              { label: "Active", value: "ACTIVE" },
+              { label: "Inactive", value: "INACTIVE" },
+              { label: "Deleted", value: "DELETED" },
+            ].map((s) => (
+              <button
+                key={s.value}
+                onClick={() => setStatusFilter(s.value as any)}
+                className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                  statusFilter === s.value
+                    ? "bg-card text-foreground shadow-md border border-border scale-[1.02]"
+                    : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+                }`}
               >
-                <option value="">All Statuses</option>
-                <option value="ACTIVE">Active</option>
-                <option value="INACTIVE">Inactive</option>
-                <option value="DELETED">Deleted</option>
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground w-4 h-4" />
-            </div>
+                {s.label}
+              </button>
+            ))}
           </div>
 
           {/* Data Table */}
@@ -712,7 +679,6 @@ export function AdminEmployeeDirectory({
               <div className="px-6 py-3 border-t border-border bg-secondary/20 flex items-center justify-between text-xs text-muted-foreground">
                 <span>
                   {filtered.length} employee{filtered.length !== 1 ? "s" : ""} found
-                  {searchValue && ` for "${searchValue}"`}
                 </span>
               </div>
             )}

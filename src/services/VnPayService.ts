@@ -174,4 +174,12 @@ export const VnPayService = {
     return data as RedirectView;
   },
 
+  /**
+   * GET /api/payment/vnpay/callback
+   */
+  handlePaymentCallback: async (queryParams: any): Promise<any> => {
+    const { data, error } = await apiClient.GET("/api/payment/vnpay/callback" as any, { params: { query: queryParams } });
+    if (error) throw error;
+    return data as any;
+  },
 };
