@@ -44,12 +44,24 @@ function StatusBadge({ status }: { status?: string }) {
   );
 }
 
+function formatDate(dateStr?: string) {
+  if (!dateStr) return "—";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+  } catch {
+    return dateStr;
+  }
+}
+
 function formatTime(timeStr?: string) {
   if (!timeStr) return "—";
-  if (timeStr.length >= 5) {
-    return timeStr.slice(0, 5);
+  if (timeStr.includes("T")) {
+    const timePart = timeStr.split("T")[1];
+    return timePart.slice(0, 5);
   }
-  return timeStr;
+  return timeStr.slice(0, 5);
 }
 
 // ─── Schedule Form Modal ──────────────────────────────────────────────────────
@@ -172,15 +184,37 @@ function ScheduleFormModal({ mode, initial, onClose, onSaved, editId, tours, rou
           </div>
 
           {/* Departure */}
-          <div>
-            <label className={labelCls}>Departure Time</label>
-            <input
-              type="time"
-              className={inputCls}
-              value={form.departureAt ? form.departureAt.slice(0, 5) : ""}
-              onChange={(e) => set("departureAt", e.target.value ? `${e.target.value}:00` : "")}
-              disabled={loading}
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={labelCls}>Departure Date *</label>
+              <input
+                type="date"
+                className={inputCls}
+                required
+                value={form.departureAt ? form.departureAt.split("T")[0] : ""}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const time = form.departureAt?.split("T")[1] || "08:00:00";
+                  set("departureAt", val ? `${val}T${time}` : "");
+                }}
+                disabled={loading}
+              />
+            </div>
+            <div>
+              <label className={labelCls}>Departure Time *</label>
+              <input
+                type="time"
+                className={inputCls}
+                required
+                value={form.departureAt && form.departureAt.includes("T") ? form.departureAt.split("T")[1].slice(0, 5) : ""}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const date = form.departureAt?.split("T")[0] || new Date().toISOString().split("T")[0];
+                  set("departureAt", `${date}T${val}:00`);
+                }}
+                disabled={loading}
+              />
+            </div>
           </div>
 
           {/* Min/Max Pax */}
@@ -517,9 +551,12 @@ export function AdminScheduleManager() {
                         </td>
                         {/* Departure */}
                         <td className="px-6 py-4 whitespace-nowrap hidden sm:table-cell text-sm text-foreground">
-                          <div className="flex items-center gap-1.5">
-                            <Clock className="w-3.5 h-3.5 text-muted-foreground" />
-                            {formatTime(sch.departureAt)}
+                          <div className="flex flex-col">
+                            <span className="font-semibold">{formatDate(sch.departureAt)}</span>
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <Clock className="w-3 h-3" />
+                              {formatTime(sch.departureAt)}
+                            </div>
                           </div>
                         </td>
                         {/* Pax */}
