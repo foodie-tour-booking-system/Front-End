@@ -48,8 +48,9 @@ export function BookingStep1({ tourId, tour, form, onUpdateForm, onNext }: Booki
       .finally(() => setLoadingSchedules(false));
   }, [tourId]);
 
-  const adultPrice = tour?.basePriceAdult ?? 0;
-  const childPrice = tour?.basePriceChild ?? 0;
+  const isPrivate = form.tourType === "PRIVATE";
+  const adultPrice = isPrivate ? (tour?.privatePriceAdult ?? 0) : (tour?.groupPriceAdult ?? 0);
+  const childPrice = isPrivate ? (tour?.privatePriceChild ?? 0) : (tour?.groupPriceChild ?? 0);
   const totalPrice = form.adultCount * adultPrice + form.childrenCount * childPrice;
 
   const changeCount = (field: "adultCount" | "childrenCount", delta: number) => {
@@ -181,6 +182,52 @@ export function BookingStep1({ tourId, tour, form, onUpdateForm, onNext }: Booki
             </p>
           )}
         </section>
+
+        {/* Tour Option (Group vs Private) */}
+        <section className="bg-card rounded-2xl p-6 shadow-sm border border-border">
+          <h2 className="text-xl font-bold mb-5 flex items-center gap-2 text-foreground">
+            <Clock className="w-5 h-5 text-primary" />
+            Select Tour Option
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <button
+              onClick={() => onUpdateForm({ tourType: "GROUP" })}
+              className={`flex flex-col p-4 rounded-xl border-2 transition-all text-left ${
+                form.tourType === "GROUP"
+                  ? "border-primary bg-primary/10 shadow-sm"
+                  : "border-border hover:border-primary/40 hover:bg-secondary/30"
+              }`}
+            >
+              <div className="flex justify-between items-start mb-2">
+                <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
+                  form.tourType === "GROUP" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
+                }`}>Group Tour</span>
+                {form.tourType === "GROUP" && <CheckCircle2 className="w-4 h-4 text-primary" />}
+              </div>
+              <p className="font-bold text-foreground">Shared Experience</p>
+              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">Join other travelers in a luxury speedboat (max 12 guests).</p>
+            </button>
+
+            <button
+              onClick={() => onUpdateForm({ tourType: "PRIVATE" })}
+              className={`flex flex-col p-4 rounded-xl border-2 transition-all text-left ${
+                form.tourType === "PRIVATE"
+                  ? "border-primary bg-primary/10 shadow-sm"
+                  : "border-border hover:border-primary/40 hover:bg-secondary/30"
+              }`}
+            >
+              <div className="flex justify-between items-start mb-2">
+                <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
+                  form.tourType === "PRIVATE" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
+                }`}>Private Tour</span>
+                {form.tourType === "PRIVATE" && <CheckCircle2 className="w-4 h-4 text-primary" />}
+              </div>
+              <p className="font-bold text-foreground">Exclusive Experience</p>
+              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">The entire boat for you and your group. Flexible itinerary.</p>
+            </button>
+          </div>
+        </section>
+
 
         {/* Guest Count */}
         <section className="bg-card rounded-2xl p-6 shadow-sm border border-border">

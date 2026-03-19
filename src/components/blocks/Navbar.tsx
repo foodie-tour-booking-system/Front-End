@@ -6,7 +6,7 @@ import { AuthService } from "@/services/AuthService";
 export function Navbar() {
   const navigate = useNavigate();
   const token = Cookies.get("token");
-  
+
   let isAdmin = false;
 
   if (token) {
@@ -63,7 +63,7 @@ export function Navbar() {
             to="/dashboard"
             className="text-sm font-medium text-foreground hover:text-primary transition-colors"
           >
-            Booking
+            My Booking
           </Link>
           <Link
             to="/tracking"
@@ -122,6 +122,6 @@ export function Navbar() {
           </svg>
         </button>
       </div>
-</nav>
+    </nav>
   );
 }

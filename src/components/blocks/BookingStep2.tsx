@@ -12,18 +12,12 @@ interface BookingStep2Props {
   onNext: (bookingCode: string) => void;
 }
 
-const PAYMENT_OPTIONS: { value: "VNPAY" | "MOMO" | "VISA"; label: string; icon: React.ReactNode; description: string }[] = [
+const PAYMENT_OPTIONS: { value: "VNPAY" | "VISA"; label: string; icon: React.ReactNode; description: string }[] = [
   {
     value: "VNPAY",
     label: "VNPay",
     icon: <img src="/vnpay.png" alt="VNPay" className="w-8 h-8 object-contain" />,
     description: "Pay via VNPay e-wallet or internet banking",
-  },
-  {
-    value: "MOMO",
-    label: "MoMo",
-    icon: <img src="/momo.png" alt="MoMo" className="w-8 h-8 object-contain rounded-lg" />,
-    description: "Pay via MoMo mobile wallet",
   },
   {
     value: "VISA",
@@ -38,8 +32,9 @@ export function BookingStep2({ tour, form, onUpdateForm, onBack, onNext }: Booki
   const [error, setError] = useState("");
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
 
-  const adultPrice = tour?.basePriceAdult ?? 0;
-  const childPrice = tour?.basePriceChild ?? 0;
+  const isPrivate = form.tourType === "PRIVATE";
+  const adultPrice = isPrivate ? (tour?.privatePriceAdult ?? 0) : (tour?.groupPriceAdult ?? 0);
+  const childPrice = isPrivate ? (tour?.privatePriceChild ?? 0) : (tour?.groupPriceChild ?? 0);
   const totalPrice = form.adultCount * adultPrice + form.childrenCount * childPrice;
 
   const handlePay = async () => {
@@ -58,6 +53,7 @@ export function BookingStep2({ tour, form, onUpdateForm, onBack, onNext }: Booki
         pickupLocation: form.pickupLocation,
         customerNote: form.customerNote,
         paymentMethod: form.paymentMethod,
+        tourType: form.tourType,
       });
 
       // Save booking code to local history

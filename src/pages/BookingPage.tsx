@@ -17,7 +17,8 @@ export interface BookingFormData {
   customerName: string;
   email: string;
   phone: string;
-  paymentMethod: "VNPAY" | "MOMO" | "VISA";
+  paymentMethod: "VNPAY" | "VISA";
+  tourType: "GROUP" | "PRIVATE";
 }
 
 const DEFAULT_FORM: BookingFormData = {
@@ -31,6 +32,7 @@ const DEFAULT_FORM: BookingFormData = {
   email: "",
   phone: "",
   paymentMethod: "VNPAY",
+  tourType: "GROUP",
 };
 
 export function BookingPage() {

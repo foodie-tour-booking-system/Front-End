@@ -13,7 +13,8 @@ export interface BookingCreateRequest {
   childrenCount?: number;
   pickupLocation?: string;
   customerNote?: string;
-  paymentMethod?: "VNPAY" | "MOMO" | "VISA";
+  paymentMethod?: "VNPAY" | "VISA";
+  tourType?: "GROUP" | "PRIVATE";
 }
 
 export interface BookingLogResponse {
@@ -33,7 +34,8 @@ export interface BookingResponse {
   amountPaid?: number;
   remainingAmount?: number;
   duration?: number;
-  tourId?: number;   // ← dùng để lọc lịch trình cùng tour
+  tourId?: number;
+  tourType?: "GROUP" | "PRIVATE";
 }
 
 export interface TrackingStep {

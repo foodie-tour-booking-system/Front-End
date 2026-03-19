@@ -160,12 +160,7 @@ export function TourDetailsPage() {
                   {tour.duration} hours
                 </span>
               </div>
-              <div className="flex items-center">
-                <span className="mr-2 text-muted-foreground">Type:</span>
-                <span className="bg-primary text-primary-foreground px-3 py-1 rounded">
-                  {tour.tourType}
-                </span>
-              </div>
+
             </div>
             <div className="space-y-4 text-sm leading-relaxed text-muted-foreground text-justify whitespace-pre-wrap">
               {tour.tourDescription || "No description available."}
@@ -267,40 +262,37 @@ export function TourDetailsPage() {
 
         <aside className="w-full lg:w-1/4">
           <div className="sticky top-24 bg-card p-6 rounded shadow-md border border-border">
-            <div className="space-y-4 mb-6">
-              <div className="flex justify-between items-center border-b border-border pb-2">
-                <span className="font-bold text-sm uppercase text-muted-foreground">
-                  Adult
-                </span>
-                <span className="font-bold text-primary">
-                  {tour.basePriceAdult?.toLocaleString() || "0"} VND*
-                </span>
-              </div>
-              <div className="flex justify-between items-center border-b border-border pb-2">
-                <div className="flex flex-col">
-                  <span className="font-bold text-sm uppercase text-muted-foreground">
-                    Child
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    4-12 years old
-                  </span>
+            <div className="space-y-6 mb-8">
+              {/* Group Pricing */}
+              <div className="p-3 rounded-lg bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30">
+                <h4 className="text-[10px] font-black uppercase text-blue-600 dark:text-blue-400 mb-2 tracking-wider flex items-center justify-between">
+                  Group Tour 
+                  <span className="bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded text-[9px]">SHARED</span>
+                </h4>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-xs font-bold text-muted-foreground">Adult</span>
+                  <span className="font-black text-primary text-sm">{tour.groupPriceAdult?.toLocaleString() || "0"} ₫</span>
                 </div>
-                <span className="font-bold text-primary">
-                  {tour.basePriceChild?.toLocaleString() || "0"} VND*
-                </span>
-              </div>
-              <div className="flex justify-between items-center pb-2">
-                <div className="flex flex-col">
-                  <span className="font-bold text-sm uppercase text-muted-foreground">
-                    Infant
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    0-3 years old
-                  </span>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold text-muted-foreground">Child</span>
+                  <span className="font-black text-primary text-sm">{tour.groupPriceChild?.toLocaleString() || "0"} ₫</span>
                 </div>
-                <span className="font-bold text-foreground">
-                  Free of charge
-                </span>
+              </div>
+
+              {/* Private Pricing */}
+              <div className="p-3 rounded-lg bg-purple-50/50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-800/30">
+                <h4 className="text-[10px] font-black uppercase text-purple-600 dark:text-purple-400 mb-2 tracking-wider flex items-center justify-between">
+                  Private Tour
+                  <span className="bg-purple-100 dark:bg-purple-800 text-purple-700 dark:text-purple-300 px-1.5 py-0.5 rounded text-[9px]">EXCLUSIVE</span>
+                </h4>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-xs font-bold text-muted-foreground">Adult</span>
+                  <span className="font-black text-primary text-sm">{tour.privatePriceAdult?.toLocaleString() || "0"} ₫</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold text-muted-foreground">Child</span>
+                  <span className="font-black text-primary text-sm">{tour.privatePriceChild?.toLocaleString() || "0"} ₫</span>
+                </div>
               </div>
             </div>
             <Button

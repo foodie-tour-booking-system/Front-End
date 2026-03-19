@@ -45,7 +45,7 @@ function FeaturedTourCard({ tour }: { tour: TourResponse }) {
         </h3>
         <div className="flex items-center gap-4 text-sm text-muted-foreground mt-auto pt-2">
           <span className="bg-primary/10 text-primary font-bold px-3 py-1 rounded">
-            {tour.basePriceAdult?.toLocaleString()} VND
+            {tour.groupPriceAdult?.toLocaleString()} VND
           </span>
           <span className="flex items-center gap-1">{tour.duration} hours</span>
         </div>

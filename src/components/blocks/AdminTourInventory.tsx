@@ -13,10 +13,11 @@ type ModalMode = "create" | "edit";
 const EMPTY_FORM: TourRequest = {
   tourName: "",
   tourDescription: "",
-  basePriceAdult: 0,
-  basePriceChild: 0,
+  groupPriceAdult: 0,
+  groupPriceChild: 0,
+  privatePriceAdult: 0,
+  privatePriceChild: 0,
   duration: 1,
-  tourType: "GROUP",
   tourStatus: "DRAFT",
 };
 
@@ -137,32 +138,72 @@ function TourFormModal({ mode, initial, onClose, onSaved, editId }: TourFormModa
             />
           </div>
 
-          {/* Prices row */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={labelCls}>Adult Price (VND) *</label>
-              <input
-                type="number"
-                min={0}
-                className={inputCls}
-                required
-                value={form.basePriceAdult ?? ""}
-                onChange={(e) => set("basePriceAdult", Number(e.target.value))}
-                disabled={loading}
-              />
-            </div>
-            <div>
-              <label className={labelCls}>Child Price (VND)</label>
-              <input
-                type="number"
-                min={0}
-                className={inputCls}
-                value={form.basePriceChild ?? ""}
-                onChange={(e) => set("basePriceChild", Number(e.target.value))}
-                disabled={loading}
-              />
+          {/* Prices for Group */}
+          <div className="space-y-4 pt-2 border-t border-border/50">
+            <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-blue-500" />
+              Group Tour Pricing
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className={labelCls}>Adult Price (VND) *</label>
+                <input
+                  type="number"
+                  min={0}
+                  className={inputCls}
+                  required
+                  value={form.groupPriceAdult ?? ""}
+                  onChange={(e) => set("groupPriceAdult", Number(e.target.value))}
+                  disabled={loading}
+                />
+              </div>
+              <div>
+                <label className={labelCls}>Child Price (VND)</label>
+                <input
+                  type="number"
+                  min={0}
+                  className={inputCls}
+                  value={form.groupPriceChild ?? ""}
+                  onChange={(e) => set("groupPriceChild", Number(e.target.value))}
+                  disabled={loading}
+                />
+              </div>
             </div>
           </div>
+
+          {/* Prices for Private */}
+          <div className="space-y-4 pt-2 border-t border-border/50">
+            <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-purple-500" />
+              Private Tour Pricing
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className={labelCls}>Adult Price (VND) *</label>
+                <input
+                  type="number"
+                  min={0}
+                  className={inputCls}
+                  required
+                  value={form.privatePriceAdult ?? ""}
+                  onChange={(e) => set("privatePriceAdult", Number(e.target.value))}
+                  disabled={loading}
+                />
+              </div>
+              <div>
+                <label className={labelCls}>Child Price (VND)</label>
+                <input
+                  type="number"
+                  min={0}
+                  className={inputCls}
+                  value={form.privatePriceChild ?? ""}
+                  onChange={(e) => set("privatePriceChild", Number(e.target.value))}
+                  disabled={loading}
+                />
+              </div>
+            </div>
+          </div>
+
 
           {/* Duration, Type, Status row */}
           <div className="grid grid-cols-3 gap-4">
@@ -177,18 +218,6 @@ function TourFormModal({ mode, initial, onClose, onSaved, editId }: TourFormModa
                 onChange={(e) => set("duration", Number(e.target.value))}
                 disabled={loading}
               />
-            </div>
-            <div>
-              <label className={labelCls}>Type</label>
-              <select
-                className={`${inputCls} cursor-pointer`}
-                value={form.tourType ?? "GROUP"}
-                onChange={(e) => set("tourType", e.target.value as TourRequest["tourType"])}
-                disabled={loading}
-              >
-                <option value="GROUP">Group</option>
-                <option value="PRIVATE">Private</option>
-              </select>
             </div>
             <div>
               <label className={labelCls}>Status</label>
@@ -639,10 +668,11 @@ export function AdminTourInventory() {
           initial={modal.tour ? {
             tourName: modal.tour.tourName,
             tourDescription: modal.tour.tourDescription,
-            basePriceAdult: modal.tour.basePriceAdult,
-            basePriceChild: modal.tour.basePriceChild,
+            groupPriceAdult: modal.tour.groupPriceAdult,
+            groupPriceChild: modal.tour.groupPriceChild,
+            privatePriceAdult: modal.tour.privatePriceAdult,
+            privatePriceChild: modal.tour.privatePriceChild,
             duration: modal.tour.duration,
-            tourType: modal.tour.tourType,
             tourStatus: modal.tour.tourStatus,
           } : EMPTY_FORM}
           editId={modal.tour?.tourId}
@@ -702,7 +732,7 @@ export function AdminTourInventory() {
               <table className="min-w-full divide-y divide-border">
                 <thead className="bg-secondary/50">
                   <tr>
-                    {["Tour Info", "Type", "Duration", "Price (Adult)", "Status", "Actions"].map((h, i) => (
+                    {["Tour Info", "Duration", "Price Options", "Status", "Actions"].map((h, i) => (
                       <th
                         key={h}
                         scope="col"
@@ -751,26 +781,21 @@ export function AdminTourInventory() {
                             </div>
                           </div>
                         </td>
-                        {/* Type */}
-                        <td className="px-6 py-4 whitespace-nowrap hidden sm:table-cell">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100/20 text-orange-600">
-                            {tour.tourType ?? "—"}
-                          </span>
-                        </td>
+
                         {/* Duration */}
                         <td className="px-6 py-4 whitespace-nowrap hidden sm:table-cell text-sm text-foreground">
                           {tour.duration ? `${tour.duration}h` : "—"}
                         </td>
                         {/* Price */}
                         <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-[10px] font-bold text-muted-foreground uppercase mb-1">Group</div>
                           <div className="text-sm font-semibold text-foreground">
-                            {tour.basePriceAdult?.toLocaleString("vi-VN") ?? "0"} ₫
+                            {tour.groupPriceAdult?.toLocaleString("vi-VN") ?? "0"} ₫
                           </div>
-                          {tour.basePriceChild != null && (
-                            <div className="text-xs text-muted-foreground">
-                              Child: {tour.basePriceChild.toLocaleString("vi-VN")} ₫
-                            </div>
-                          )}
+                          <div className="mt-2 text-[10px] font-bold text-muted-foreground uppercase mb-1">Private</div>
+                          <div className="text-sm font-semibold text-foreground">
+                            {tour.privatePriceAdult?.toLocaleString("vi-VN") ?? "0"} ₫
+                          </div>
                         </td>
                         {/* Status */}
                         <td className="px-6 py-4 whitespace-nowrap">

@@ -41,10 +41,11 @@ export interface Sortnull {
 export interface TourRequest {
   tourName?: string;
   tourDescription?: string;
-  basePriceAdult?: number;
-  basePriceChild?: number;
+  groupPriceAdult?: number;
+  groupPriceChild?: number;
+  privatePriceAdult?: number;
+  privatePriceChild?: number;
   duration?: number;
-  tourType?: "GROUP" | "PRIVATE";
   tourStatus?: "ACTIVE" | "INACTIVE" | "DELETED" | "DRAFT";
   createdAt?: string;
   updatedAt?: string;
@@ -54,10 +55,11 @@ export interface TourResponse {
   tourId?: number;
   tourName?: string;
   tourDescription?: string;
-  basePriceAdult?: number;
-  basePriceChild?: number;
+  groupPriceAdult?: number;
+  groupPriceChild?: number;
+  privatePriceAdult?: number;
+  privatePriceChild?: number;
   duration?: number;
-  tourType?: "GROUP" | "PRIVATE";
   tourStatus?: "ACTIVE" | "INACTIVE" | "DELETED" | "DRAFT";
   createdAt?: string;
   updatedAt?: string;

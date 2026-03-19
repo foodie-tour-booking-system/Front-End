@@ -25,13 +25,11 @@ function StatusBadge({ status }: { status?: string }) {
   const colorMap: Record<string, string> = {
     ACTIVE: "bg-green-100/20 text-green-600",
     INACTIVE: "bg-yellow-100/20 text-yellow-600",
-    DELETED: "bg-red-100/20 text-red-500",
     DRAFT: "bg-gray-100/20 text-gray-500",
   };
   const dotMap: Record<string, string> = {
     ACTIVE: "bg-green-500",
     INACTIVE: "bg-yellow-500",
-    DELETED: "bg-red-500",
     DRAFT: "bg-gray-400",
   };
   return (
@@ -60,7 +58,7 @@ function formatDate(iso?: string) {
 
 // ─── Schedule Form Modal ──────────────────────────────────────────────────────
 
-const STATUS_OPTIONS = ["DRAFT", "ACTIVE", "INACTIVE", "DELETED"] as const;
+const STATUS_OPTIONS = ["DRAFT", "ACTIVE", "INACTIVE"] as const;
 
 type ModalMode = "create" | "edit";
 
@@ -303,9 +301,9 @@ function DeleteConfirmModal({ schedule, onClose, onDeleted }: DeleteConfirmModal
           <div className="flex items-center justify-center w-10 h-10 rounded-full bg-red-100/30">
             <Trash2 className="w-5 h-5 text-red-500" />
           </div>
-          <h2 className="text-base font-bold text-foreground">Delete Schedule</h2>
+          <h2 className="text-base font-bold text-foreground">Deactivate Schedule</h2>
         </div>
-        <p className="text-sm text-muted-foreground mb-1">Are you sure you want to delete schedule:</p>
+        <p className="text-sm text-muted-foreground mb-1">Are you sure you want to mark this schedule as INACTIVE?</p>
         <p className="text-sm font-semibold text-foreground mb-5">
           ID #{schedule.scheduleId} — Tour #{schedule.tourId}
         </p>
@@ -315,7 +313,7 @@ function DeleteConfirmModal({ schedule, onClose, onDeleted }: DeleteConfirmModal
         <div className="flex gap-3 justify-end">
           <Button variant="outline" onClick={onClose} disabled={loading}>Cancel</Button>
           <Button onClick={handleDelete} disabled={loading} className="bg-red-500 hover:bg-red-600 text-white font-bold min-w-[90px]">
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Delete"}
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Confirm"}
           </Button>
         </div>
       </div>
@@ -433,7 +431,7 @@ export function AdminScheduleManager() {
               />
             </div>
             <div className="flex gap-2 flex-wrap">
-              {["", "ACTIVE", "INACTIVE", "DRAFT", "DELETED"].map((s) => (
+              {["", "ACTIVE", "INACTIVE", "DRAFT"].map((s) => (
                 <button
                   key={s}
                   onClick={() => setStatusFilter(s)}
