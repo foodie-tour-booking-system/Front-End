@@ -16,10 +16,13 @@ interface BookingStep1Props {
   onNext: () => void;
 }
 
-function formatScheduleTime(iso?: string) {
-  if (!iso) return "";
+function formatScheduleTime(sch: ScheduleResponse) {
+  if (sch.isTemplate && sch.time) {
+    return sch.time.slice(0, 5);
+  }
+  if (!sch.departureAt) return "";
   try {
-    return format(parseISO(iso), "HH:mm");
+    return format(parseISO(sch.departureAt), "HH:mm");
   } catch {
     return "";
   }
@@ -109,7 +112,13 @@ export function BookingStep1({ tourId, tour, form, onUpdateForm, onNext }: Booki
                   }}
                   disabled={(d) => {
                     const dateStr = format(d, "yyyy-MM-dd");
-                    return !schedules.some((s) => s.departureAt?.startsWith(dateStr)) || d < new Date(new Date().setHours(0, 0, 0, 0));
+                    const hasDeparture = schedules.some((s) => !s.isTemplate && s.departureAt?.startsWith(dateStr));
+                    const isWithinTemplate = schedules.some((s) => 
+                      s.isTemplate && 
+                      s.startDate && s.endDate && 
+                      dateStr >= s.startDate && dateStr <= s.endDate
+                    );
+                    return (!hasDeparture && !isWithinTemplate) || d < new Date(new Date().setHours(0, 0, 0, 0));
                   }}
                   className="rounded-md border-none [--cell-size:2.8rem]"
                 />
@@ -125,7 +134,13 @@ export function BookingStep1({ tourId, tour, form, onUpdateForm, onNext }: Booki
                     </h3>
                     <div className="grid grid-cols-2 gap-3">
                       {schedules
-                        .filter((s) => s.departureAt?.startsWith(form.date))
+                        .filter((s) => {
+                          if (!s.isTemplate) {
+                            return s.departureAt?.startsWith(form.date);
+                          } else {
+                            return s.startDate && s.endDate && form.date >= s.startDate && form.date <= s.endDate;
+                          }
+                        })
                         .map((sch) => {
                           const isSelected = form.scheduleId === sch.scheduleId;
                           return (
@@ -136,12 +151,12 @@ export function BookingStep1({ tourId, tour, form, onUpdateForm, onNext }: Booki
                                 isSelected
                                   ? "border-primary bg-primary/10 shadow-sm"
                                   : "border-border hover:border-primary/40 hover:bg-secondary/30"
-                              }`}
+                                }`}
                             >
                               <div className="flex items-center justify-between gap-3">
                                 <div>
                                   <p className="font-bold text-lg text-foreground">
-                                    {formatScheduleTime(sch.departureAt)}
+                                    {formatScheduleTime(sch)}
                                   </p>
                                   <p className="text-[10px] text-muted-foreground uppercase font-black tracking-tight mt-1">
                                     {sch.minPax ?? "?"}-{sch.maxPax ?? "∞"} guests
@@ -341,8 +356,8 @@ export function BookingStep1({ tourId, tour, form, onUpdateForm, onNext }: Booki
                 <div>
                   <p className="text-xs text-muted-foreground">Schedule</p>
                   <p className="font-semibold text-foreground">
-                    {selectedSchedule 
-                      ? `${format(parseISO(selectedSchedule.departureAt!), "PPP", { locale: enUS })} at ${formatScheduleTime(selectedSchedule.departureAt)}` 
+                    {selectedSchedule && form.date
+                      ? `${format(parseISO(form.date), "PPP", { locale: enUS })} at ${formatScheduleTime(selectedSchedule)}` 
                       : "Not selected"}
                   </p>
                 </div>

@@ -13,6 +13,9 @@ export interface ScheduleRequest {
   departureAt?: string;
   scheduleStatus?: "ACTIVE" | "INACTIVE" | "DELETED" | "DRAFT";
   isTemplate?: boolean;
+  startDate?: string;
+  endDate?: string;
+  time?: string;
 }
 
 export interface ScheduleResponse {
@@ -27,6 +30,10 @@ export interface ScheduleResponse {
   createdAt?: string;
   updatedAt?: string;
   scheduleStatus?: "ACTIVE" | "INACTIVE" | "DELETED" | "DRAFT";
+  isTemplate?: boolean;
+  startDate?: string;
+  endDate?: string;
+  time?: string;
 }
 
 

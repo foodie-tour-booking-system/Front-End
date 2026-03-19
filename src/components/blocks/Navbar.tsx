@@ -60,16 +60,10 @@ export function Navbar() {
             About Us
           </Link>
           <Link
-            to="/dashboard"
-            className="text-sm font-medium text-foreground hover:text-primary transition-colors"
-          >
-            My Booking
-          </Link>
-          <Link
             to="/tracking"
             className="text-sm font-medium text-foreground hover:text-primary transition-colors"
           >
-            Tracking
+            My Booking
           </Link>
           {isAdmin && (
             <Link

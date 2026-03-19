@@ -80,6 +80,9 @@ const EMPTY_FORM: ScheduleRequest = {
   scheduleDescription: "",
   scheduleStatus: "DRAFT",
   isTemplate: false,
+  startDate: "",
+  endDate: "",
+  time: "08:00:00",
 };
 
 interface ScheduleFormModalProps {
@@ -183,38 +186,89 @@ function ScheduleFormModal({ mode, initial, onClose, onSaved, editId, tours, rou
             </div>
           </div>
 
-          {/* Departure */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={labelCls}>Departure Date *</label>
+          {/* Departure Date/Time Selection Mode */}
+          <div className="p-4 bg-muted/30 rounded-xl border border-border/50">
+            <label className="flex items-center gap-2 mb-4 cursor-pointer">
               <input
-                type="date"
-                className={inputCls}
-                required
-                value={form.departureAt ? form.departureAt.split("T")[0] : ""}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  const time = form.departureAt?.split("T")[1] || "08:00:00";
-                  set("departureAt", val ? `${val}T${time}` : "");
-                }}
+                type="checkbox"
+                className="w-4 h-4 text-primary border-border rounded focus:ring-primary"
+                checked={form.isTemplate ?? false}
+                onChange={(e) => set("isTemplate", e.target.checked)}
                 disabled={loading}
               />
-            </div>
-            <div>
-              <label className={labelCls}>Departure Time *</label>
-              <input
-                type="time"
-                className={inputCls}
-                required
-                value={form.departureAt && form.departureAt.includes("T") ? form.departureAt.split("T")[1].slice(0, 5) : ""}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  const date = form.departureAt?.split("T")[0] || new Date().toISOString().split("T")[0];
-                  set("departureAt", `${date}T${val}:00`);
-                }}
-                disabled={loading}
-              />
-            </div>
+              <span className="text-sm font-bold text-foreground">Set as Fixed Hour (Template)</span>
+            </label>
+
+            {form.isTemplate ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelCls}>Start Date</label>
+                    <input
+                      type="date"
+                      className={inputCls}
+                      value={form.startDate ?? ""}
+                      onChange={(e) => set("startDate", e.target.value)}
+                      disabled={loading}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelCls}>End Date</label>
+                    <input
+                      type="date"
+                      className={inputCls}
+                      value={form.endDate ?? ""}
+                      onChange={(e) => set("endDate", e.target.value)}
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className={labelCls}>Hour *</label>
+                  <input
+                    type="time"
+                    className={inputCls}
+                    required
+                    value={form.time ?? "08:00:00"}
+                    onChange={(e) => set("time", `${e.target.value}:00`)}
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={labelCls}>Departure Date *</label>
+                  <input
+                    type="date"
+                    className={inputCls}
+                    required={!form.isTemplate}
+                    value={form.departureAt ? form.departureAt.split("T")[0] : ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const time = form.departureAt?.split("T")[1] || "08:00:00";
+                      set("departureAt", val ? `${val}T${time}` : "");
+                    }}
+                    disabled={loading}
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>Departure Time *</label>
+                  <input
+                    type="time"
+                    className={inputCls}
+                    required={!form.isTemplate}
+                    value={form.departureAt && form.departureAt.includes("T") ? form.departureAt.split("T")[1].slice(0, 5) : ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const date = form.departureAt?.split("T")[0] || new Date().toISOString().split("T")[0];
+                      set("departureAt", `${date}T${val}:00`);
+                    }}
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Min/Max Pax */}
@@ -259,18 +313,6 @@ function ScheduleFormModal({ mode, initial, onClose, onSaved, editId, tours, rou
                   <option key={s} value={s}>{s}</option>
                 ))}
               </select>
-            </div>
-            <div className="flex items-center mt-6">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 text-primary border-border rounded focus:ring-primary"
-                  checked={form.isTemplate ?? false}
-                  onChange={(e) => set("isTemplate", e.target.checked)}
-                  disabled={loading}
-                />
-                <span className="text-sm font-semibold text-foreground">Save as Template</span>
-              </label>
             </div>
           </div>
 
@@ -373,6 +415,7 @@ export function AdminScheduleManager() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("");
   const [tourIdFilter, setTourIdFilter] = useState("");
+  const [typeFilter, setTypeFilter] = useState<"ALL" | "SCHEDULE" | "TEMPLATE">("SCHEDULE");
 
   // Name lookup lists for modals and table display
   const [tours, setTours] = useState<TourResponse[]>([]);
@@ -418,6 +461,12 @@ export function AdminScheduleManager() {
   const closeModal = () => setModal(null);
   const refresh = () => fetchSchedules(tourIdFilter, statusFilter || undefined);
 
+  const filteredSchedules = schedules.filter((sch) => {
+    if (typeFilter === "SCHEDULE") return !sch.isTemplate;
+    if (typeFilter === "TEMPLATE") return !!sch.isTemplate;
+    return true;
+  });
+
   return (
     <>
       {modal && (
@@ -432,7 +481,10 @@ export function AdminScheduleManager() {
             scheduleNote: modal.schedule.scheduleNote ?? "",
             scheduleDescription: modal.schedule.scheduleDescription ?? "",
             scheduleStatus: modal.schedule.scheduleStatus,
-            isTemplate: false,
+            isTemplate: modal.schedule.isTemplate ?? false,
+            startDate: modal.schedule.startDate ?? "",
+            endDate: modal.schedule.endDate ?? "",
+            time: modal.schedule.time ?? "08:00:00",
           } : EMPTY_FORM}
           editId={modal.schedule?.scheduleId}
           onClose={closeModal}
@@ -487,7 +539,25 @@ export function AdminScheduleManager() {
                       : "border-border text-muted-foreground hover:text-foreground hover:border-foreground"
                   }`}
                 >
-                  {s === "" ? "All" : s}
+                  {s === "" ? "All Status" : s}
+                </button>
+              ))}
+            </div>
+
+            <div className="h-8 w-[1px] bg-border self-center hidden sm:block mx-2" />
+
+            <div className="flex gap-2 flex-wrap bg-secondary/30 p-1 rounded-xl border border-border">
+              {(["ALL", "SCHEDULE", "TEMPLATE"] as const).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setTypeFilter(t)}
+                  className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${
+                    typeFilter === t
+                      ? "bg-card text-foreground shadow-sm border-border"
+                      : "text-muted-foreground hover:text-foreground border-transparent"
+                  } border`}
+                >
+                  {t === "ALL" ? "All Types" : t === "SCHEDULE" ? "Departures" : "Templates"}
                 </button>
               ))}
             </div>
@@ -517,20 +587,20 @@ export function AdminScheduleManager() {
                     <tr>
                       <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
                         <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-primary" />
-                        Loading schedules…
+                        Loading data…
                       </td>
                     </tr>
-                  ) : schedules.length === 0 ? (
+                  ) : filteredSchedules.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
-                        No schedules found.{" "}
+                        No results found for current filters.{" "}
                         <button onClick={() => setModal({ mode: "create" })} className="text-primary font-semibold hover:underline">
                           Create one?
                         </button>
                       </td>
                     </tr>
                   ) : (
-                    schedules.map((sch) => (
+                    filteredSchedules.map((sch) => (
                       <tr key={sch.scheduleId} className="hover:bg-secondary/30 transition-colors group">
                         {/* ID / Note */}
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -539,7 +609,14 @@ export function AdminScheduleManager() {
                               #{sch.scheduleId}
                             </div>
                             <div>
-                              <div className="text-sm font-bold text-foreground">{sch.scheduleNote || "—"}</div>
+                              <div className="flex items-center gap-2">
+                                <div className="text-sm font-bold text-foreground">{sch.scheduleNote || "—"}</div>
+                                {sch.isTemplate && (
+                                  <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-blue-100 text-blue-600 uppercase tracking-tighter">
+                                    Template
+                                  </span>
+                                )}
+                              </div>
                               <div className="text-xs text-muted-foreground line-clamp-1 max-w-[180px]">{sch.scheduleDescription || ""}</div>
                             </div>
                           </div>
@@ -551,13 +628,22 @@ export function AdminScheduleManager() {
                         </td>
                         {/* Departure */}
                         <td className="px-6 py-4 whitespace-nowrap hidden sm:table-cell text-sm text-foreground">
-                          <div className="flex flex-col">
-                            <span className="font-semibold">{formatDate(sch.departureAt)}</span>
-                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                              <Clock className="w-3 h-3" />
-                              {formatTime(sch.departureAt)}
+                          {sch.isTemplate ? (
+                            <div className="flex flex-col">
+                              <span className="font-semibold">{formatDate(sch.startDate)} – {formatDate(sch.endDate)}</span>
+                              <div className="flex items-center gap-1.5 text-xs text-muted-foreground italic">
+                                Fixed hour: {sch.time?.slice(0, 5) ?? "—"}
+                              </div>
                             </div>
-                          </div>
+                          ) : (
+                            <div className="flex flex-col">
+                              <span className="font-semibold">{formatDate(sch.departureAt)}</span>
+                              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                <Clock className="w-3 h-3" />
+                                {formatTime(sch.departureAt)}
+                              </div>
+                            </div>
+                          )}
                         </td>
                         {/* Pax */}
                         <td className="px-6 py-4 whitespace-nowrap hidden sm:table-cell text-sm text-foreground">
@@ -596,9 +682,9 @@ export function AdminScheduleManager() {
                 </tbody>
               </table>
             </div>
-            {!loading && schedules.length > 0 && (
+            {!loading && filteredSchedules.length > 0 && (
               <div className="px-6 py-3 border-t border-border bg-secondary/20 text-xs text-muted-foreground">
-                {schedules.length} schedule{schedules.length !== 1 ? "s" : ""} found
+                Displaying {filteredSchedules.length} {typeFilter.toLowerCase()}{filteredSchedules.length !== 1 ? "s" : ""}
               </div>
             )}
           </div>
