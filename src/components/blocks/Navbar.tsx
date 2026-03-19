@@ -87,15 +87,9 @@ export function Navbar() {
             <>
               <Link
                 to="/login"
-                className="text-sm font-medium text-foreground hover:text-primary transition-colors"
-              >
-                Login
-              </Link>
-              <Link
-                to="/register"
                 className="text-sm font-bold bg-[#f1c40f] hover:bg-[#d4ac0d] text-slate-900 px-4 py-2 rounded-lg transition-colors inline-block"
               >
-                Sign Up
+                Login
               </Link>
             </>
           ) : (
