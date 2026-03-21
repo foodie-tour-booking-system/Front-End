@@ -82,10 +82,15 @@ export function BookingStep1({ tourId, tour, form, onUpdateForm, onNext }: Booki
 
         {/* Schedule Selection */}
         <section className="bg-card rounded-2xl p-6 shadow-sm border border-border">
-          <h2 className="text-xl font-bold mb-5 flex items-center gap-2 text-foreground">
-            <CalendarDays className="w-5 h-5 text-primary" />
-            Select Departure Date
-          </h2>
+          <div className="mb-5">
+            <h2 className="text-xl font-bold flex items-center gap-2 text-foreground">
+              <CalendarDays className="w-5 h-5 text-primary" />
+              Select Departure Date
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Note: Only dates with available departure schedules can be selected. Other dates are disabled.
+            </p>
+          </div>
 
           {loadingSchedules ? (
             <div className="flex items-center gap-2 text-muted-foreground py-12 justify-center">
@@ -113,9 +118,9 @@ export function BookingStep1({ tourId, tour, form, onUpdateForm, onNext }: Booki
                   disabled={(d) => {
                     const dateStr = format(d, "yyyy-MM-dd");
                     const hasDeparture = schedules.some((s) => !s.isTemplate && s.departureAt?.startsWith(dateStr));
-                    const isWithinTemplate = schedules.some((s) => 
-                      s.isTemplate && 
-                      s.startDate && s.endDate && 
+                    const isWithinTemplate = schedules.some((s) =>
+                      s.isTemplate &&
+                      s.startDate && s.endDate &&
                       dateStr >= s.startDate && dateStr <= s.endDate
                     );
                     return (!hasDeparture && !isWithinTemplate) || d < new Date(new Date().setHours(0, 0, 0, 0));
@@ -182,6 +187,11 @@ export function BookingStep1({ tourId, tour, form, onUpdateForm, onNext }: Booki
               </div>
             </div>
           )}
+          {errors.date && (
+            <p className="text-xs text-destructive mt-4 flex items-center gap-1 font-medium bg-destructive/10 p-2 rounded-lg border border-destructive/20 animate-in slide-in-from-top-1">
+              <AlertTriangle className="w-3.5 h-3.5" />{errors.date}
+            </p>
+          )}
           {errors.scheduleId && (
             <p className="text-xs text-destructive mt-4 flex items-center gap-1 font-medium bg-destructive/10 p-2 rounded-lg border border-destructive/20 animate-in slide-in-from-top-1">
               <AlertTriangle className="w-3.5 h-3.5" />{errors.scheduleId}
@@ -211,7 +221,7 @@ export function BookingStep1({ tourId, tour, form, onUpdateForm, onNext }: Booki
                 {form.tourType === "GROUP" && <CheckCircle2 className="w-4 h-4 text-primary" />}
               </div>
               <p className="font-bold text-foreground">Shared Experience</p>
-              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">Join other travelers in a luxury speedboat (max 12 guests).</p>
+              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">Join other travelers in your journey.</p>
             </button>
 
             <button
@@ -229,7 +239,7 @@ export function BookingStep1({ tourId, tour, form, onUpdateForm, onNext }: Booki
                 {form.tourType === "PRIVATE" && <CheckCircle2 className="w-4 h-4 text-primary" />}
               </div>
               <p className="font-bold text-foreground">Exclusive Experience</p>
-              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">The entire boat for you and your group. Flexible itinerary.</p>
+              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">The entire tour is for you and your group. Flexible itinerary.</p>
             </button>
           </div>
         </section>
@@ -357,7 +367,7 @@ export function BookingStep1({ tourId, tour, form, onUpdateForm, onNext }: Booki
                   <p className="text-xs text-muted-foreground">Schedule</p>
                   <p className="font-semibold text-foreground">
                     {selectedSchedule && form.date
-                      ? `${format(parseISO(form.date), "PPP", { locale: enUS })} at ${formatScheduleTime(selectedSchedule)}` 
+                      ? `${format(parseISO(form.date), "PPP", { locale: enUS })} at ${formatScheduleTime(selectedSchedule)}`
                       : "Not selected"}
                   </p>
                 </div>
@@ -383,6 +393,7 @@ export function BookingStep1({ tourId, tour, form, onUpdateForm, onNext }: Booki
 
               <Button
                 onClick={handleContinue}
+                type="button"
                 className="w-full mt-5 font-bold text-primary-foreground py-5 text-base"
               >
                 Continue to Payment →
