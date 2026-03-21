@@ -137,7 +137,7 @@ export const BookingService = {
    * POST /api/booking/relocate/verify
    */
   verifyBooking: async (body: RelocateBookingRequest, token?: string): Promise<string> => {
-    const { data, error } = await apiClient.POST("/api/booking/relocate/verify" as any, { 
+    const { data, error } = await apiClient.POST("/api/booking/relocate/verify" as any, {
       body: body as any,
       headers: token ? { "Access-Token": token } : undefined
     });
@@ -175,8 +175,10 @@ export const BookingService = {
   /**
    * GET /api/booking
    */
-  getAllBookings: async (): Promise<BookingResponse[]> => {
-    const { data, error } = await apiClient.GET("/api/booking/all" as any);
+  getAllBookings: async (queryParams?: { bookingStatus?: string; scheduleId?: number }): Promise<BookingResponse[]> => {
+    const { data, error } = await apiClient.GET("/api/booking" as any, { 
+      params: queryParams ? { query: queryParams } : undefined 
+    });
     if (error) throw error;
     return data as BookingResponse[];
   },

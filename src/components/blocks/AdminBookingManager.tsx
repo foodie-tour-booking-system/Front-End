@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -22,7 +22,6 @@ import {
   Clock,
   MapPin,
   Hash,
-  CreditCard,
 } from "lucide-react";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -364,17 +363,17 @@ function RelocateProcessModal({ request, onClose, onProcessed }: RelocateProcess
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-type BookingTab = "search" | "relocate";
+type BookingTab = "list" | "relocate";
 
 export function AdminBookingManager() {
-  const [activeTab, setActiveTab] = useState<BookingTab>("search");
+  const [activeTab, setActiveTab] = useState<BookingTab>("list");
 
-  // ── Search tab state ──
+  // ── List tab state ──
+  const [bookings, setBookings] = useState<BookingResponse[]>([]);
+  const [bookingsLoading, setBookingsLoading] = useState(false);
+  const [bookingsError, setBookingsError] = useState("");
+  const [bookingFilterStatus, setBookingFilterStatus] = useState<string>("");
   const [searchCode, setSearchCode] = useState("");
-  const [searchedCode, setSearchedCode] = useState("");
-  const [searchedBooking, setSearchedBooking] = useState<BookingResponse | null>(null);
-  const [searchLoading, setSearchLoading] = useState(false);
-  const [searchError, setSearchError] = useState("");
   const [detailModal, setDetailModal] = useState<string | null>(null);
 
   // ── Relocate tab state ──
@@ -384,24 +383,17 @@ export function AdminBookingManager() {
   const [relocateFilter, setRelocateFilter] = useState<string>("");
   const [processModal, setProcessModal] = useState<RelocateBookingResponse | null>(null);
 
-  const searchInputRef = useRef<HTMLInputElement>(null);
-
-  // ── Search booking ──
-  const handleSearch = async (e?: React.FormEvent) => {
-    e?.preventDefault();
-    const code = searchCode.trim();
-    if (!code) return;
-    setSearchLoading(true);
-    setSearchError("");
-    setSearchedBooking(null);
+  // ── Fetch all bookings ──
+  const fetchBookings = async () => {
+    setBookingsLoading(true);
+    setBookingsError("");
     try {
-      const result = await BookingService.getBookingById({ bookingCode: code });
-      setSearchedBooking(result);
-      setSearchedCode(code);
+      const result = await BookingService.getAllBookings();
+      setBookings(result);
     } catch (err: any) {
-      setSearchError(err?.message ?? "Không tìm thấy booking với mã này.");
+      setBookingsError(err?.message ?? "Không thể tải danh sách booking.");
     } finally {
-      setSearchLoading(false);
+      setBookingsLoading(false);
     }
   };
 
@@ -420,10 +412,17 @@ export function AdminBookingManager() {
   };
 
   useEffect(() => {
-    if (activeTab === "relocate") {
+    if (activeTab === "list") {
+      fetchBookings();
+    } else if (activeTab === "relocate") {
       fetchRelocateRequests();
     }
   }, [activeTab]);
+
+  const filteredBookings = [...bookings]
+    .filter((b) => !bookingFilterStatus || b.bookingStatus === bookingFilterStatus)
+    .filter((b) => !searchCode || b.bookingCode?.toLowerCase().includes(searchCode.toLowerCase()))
+    .sort((a, b) => (b.bookingId ?? 0) - (a.bookingId ?? 0));
 
   const filteredRelocate = [...relocateRequests]
     .filter((r) => !relocateFilter || r.relocateRequestStatus === relocateFilter)
@@ -462,15 +461,15 @@ export function AdminBookingManager() {
           {/* Tab Navigation */}
           <div className="flex gap-1 p-1 bg-secondary/30 rounded-xl border border-border w-fit mb-8">
             <button
-              onClick={() => setActiveTab("search")}
+              onClick={() => setActiveTab("list")}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                activeTab === "search"
+                activeTab === "list"
                   ? "bg-card text-foreground shadow-sm border border-border"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              <Search className="w-4 h-4" />
-              Tra cứu Booking
+              <ClipboardList className="w-4 h-4" />
+              Danh sách Booking
             </button>
             <button
               onClick={() => setActiveTab("relocate")}
@@ -490,104 +489,142 @@ export function AdminBookingManager() {
             </button>
           </div>
 
-          {/* ── Search Tab ── */}
-          {activeTab === "search" && (
-            <div className="space-y-6">
-              {/* Search Box */}
-              <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
-                <h3 className="text-base font-bold text-foreground mb-4">Tìm kiếm theo Booking Code</h3>
-                <form onSubmit={handleSearch} className="flex gap-3">
-                  <div className="relative flex-1">
+          {/* ── List Tab ── */}
+          {activeTab === "list" && (
+            <div className="space-y-5">
+              {/* Toolbar */}
+              <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto flex-1">
+                  <div className="relative w-full sm:w-64">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
                     <Input
-                      ref={searchInputRef}
-                      className="pl-10 h-11"
-                      placeholder="Nhập mã booking... (ví dụ: BK-2024-001)"
+                      className="pl-9 h-10 w-full"
+                      placeholder="Tìm mã booking..."
                       value={searchCode}
                       onChange={(e) => setSearchCode(e.target.value)}
                     />
                   </div>
-                  <Button
-                    type="submit"
-                    disabled={searchLoading || !searchCode.trim()}
-                    className="h-11 px-6 font-bold text-primary-foreground min-w-[110px]"
-                  >
-                    {searchLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Tìm kiếm"}
-                  </Button>
-                </form>
+                  <div className="flex gap-2 flex-wrap">
+                    {["", "PENDING", "CONFIRMED", "COMPLETED", "CANCELLED", "RESCHEDULED"].map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => setBookingFilterStatus(s)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+                          bookingFilterStatus === s
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "border-border text-muted-foreground hover:text-foreground hover:border-foreground"
+                        }`}
+                      >
+                        {s === "" ? "Tất cả" : s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={fetchBookings}
+                  disabled={bookingsLoading}
+                  className="gap-2 font-medium flex-shrink-0"
+                >
+                  <RefreshCw className={`w-4 h-4 ${bookingsLoading ? "animate-spin" : ""}`} />
+                  Làm mới
+                </Button>
               </div>
 
-              {/* Search Error */}
-              {searchError && (
-                <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm">
-                  <AlertTriangle className="w-5 h-5 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="font-semibold">Không tìm thấy</p>
-                    <p>{searchError}</p>
-                  </div>
+              {/* Error */}
+              {bookingsError && (
+                <div className="flex items-start gap-2 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm">
+                  <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+                  {bookingsError}
                 </div>
               )}
 
-              {/* Search Result */}
-              {searchedBooking && (
-                <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
-                  <div className="px-6 py-4 border-b border-border bg-secondary/20">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Kết quả tìm kiếm</p>
-                  </div>
-                  <div className="p-6">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 flex-shrink-0 rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
-                          <BookOpen className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-lg font-bold text-foreground">{searchedBooking.bookingCode ?? searchedCode}</span>
-                            <BookingStatusBadge status={searchedBooking.bookingStatus} />
-                          </div>
-                          <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1">
-                            <span className="text-xs text-muted-foreground flex items-center gap-1">
-                              <CreditCard className="w-3 h-3" />
-                              {formatCurrency(searchedBooking.totalPrice)}
-                            </span>
-                            <span className="text-xs text-muted-foreground flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              {formatDateRange(searchedBooking.departureTime, searchedBooking.duration)}
-                            </span>
-                            {searchedBooking.pickupLocation && (
-                              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                <MapPin className="w-3 h-3" />
-                                {searchedBooking.pickupLocation}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <Button
-                        variant="outline"
-                        className="gap-2 font-semibold flex-shrink-0"
-                        onClick={() => setDetailModal(searchedCode)}
-                      >
-                        Xem chi tiết
-                        <ChevronRight className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
+              {/* Table */}
+              <div className="bg-card shadow-sm border border-border rounded-2xl overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-border">
+                    <thead className="bg-secondary/50">
+                      <tr>
+                        {["Mã Booking", "Khách hàng / Liên hệ", "Lịch trình", "Tổng tiền", "Trạng thái", "Hành động"].map((h, i) => (
+                          <th
+                            key={h}
+                            scope="col"
+                            className={`px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider ${
+                              i === 5 ? "text-right" : "text-left"
+                            }`}
+                          >
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="bg-card divide-y divide-border">
+                      {bookingsLoading ? (
+                        <tr>
+                          <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
+                            <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-primary" />
+                            Đang tải...
+                          </td>
+                        </tr>
+                      ) : filteredBookings.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground text-sm">
+                            Không có booking nào{bookingFilterStatus ? ` với trạng thái "${bookingFilterStatus}"` : ""}.
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredBookings.map((bk) => (
+                          <tr key={bk.bookingId ?? bk.bookingCode} className="hover:bg-secondary/30 transition-colors group">
+                            {/* Booking Code */}
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <button
+                                onClick={() => setDetailModal(bk.bookingCode!)}
+                                className="font-mono text-sm font-bold text-primary hover:underline"
+                              >
+                                {bk.bookingCode ?? "—"}
+                              </button>
+                            </td>
+                            {/* Khách hàng */}
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <p className="text-sm font-medium text-foreground">{bk.pickupLocation ? "Có đón khách" : "Tự túc"}</p>
+                              <p className="text-xs text-muted-foreground">{bk.tourType === "PRIVATE" ? "Private Tour" : "Group Tour"}</p>
+                            </td>
+                            {/* Lịch trình */}
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                              {formatDateRange(bk.departureTime, bk.duration)}
+                            </td>
+                            {/* Tổng tiền */}
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold">
+                              {formatCurrency(bk.totalPrice)}
+                            </td>
+                            {/* Status */}
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <BookingStatusBadge status={bk.bookingStatus} />
+                            </td>
+                            {/* Actions */}
+                            <td className="px-6 py-4 whitespace-nowrap text-right">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => setDetailModal(bk.bookingCode!)}
+                                className="h-8 w-8 p-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                              >
+                                <ChevronRight className="w-4 h-4" />
+                              </Button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
                 </div>
-              )}
-
-              {/* Empty state */}
-              {!searchedBooking && !searchError && !searchLoading && (
-                <div className="flex flex-col items-center justify-center py-20 text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-4">
-                    <BookOpen className="w-8 h-8 text-primary" />
+                {!bookingsLoading && filteredBookings.length > 0 && (
+                  <div className="px-6 py-3 border-t border-border bg-secondary/20 text-xs text-muted-foreground flex justify-between items-center">
+                    <span>{filteredBookings.length} bookings found</span>
                   </div>
-                  <h3 className="text-lg font-bold text-foreground mb-2">Tra cứu Booking</h3>
-                  <p className="text-muted-foreground text-sm max-w-sm">
-                    Nhập mã booking vào ô tìm kiếm bên trên để xem thông tin chi tiết và lịch sử hoạt động của booking.
-                  </p>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           )}
 
