@@ -13,6 +13,7 @@ import { RegisterPage } from "@/pages/RegisterPage";
 import { TrackingPage } from "@/pages/TrackingPage";
 import { VnPayResultPage } from "@/pages/VnPayResultPage";
 import { ProtectedRoute } from "./components/routes/ProtectedRoute";
+import { ChatWidget } from "@/components/blocks/ChatWidget";
 
 function App() {
   return (
@@ -41,6 +42,7 @@ function App() {
         {/* Error Fallbacks */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <ChatWidget />
     </BrowserRouter>
   );
 }
