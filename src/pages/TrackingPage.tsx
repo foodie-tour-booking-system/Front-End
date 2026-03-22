@@ -1,16 +1,14 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { BookingService, type TrackingResponse } from "@/services/BookingService";
 import { Navbar } from "@/components/blocks/Navbar";
 import { Footer } from "@/components/blocks/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Search,
   MapPin,
   Clock,
   CheckCircle2,
-  Circle,
   Loader2,
   AlertCircle,
   Navigation,
@@ -19,7 +17,8 @@ import {
   RefreshCw,
   Hash,
   CalendarDays,
-  ArrowRight
+  Mail,
+  Phone
 } from "lucide-react";
 import { ScheduleService, type ScheduleResponse } from "@/services/ScheduleService";
 import { format, parseISO } from "date-fns";
@@ -27,6 +26,7 @@ import { format, parseISO } from "date-fns";
 export function TrackingPage() {
   const { bookingCode: urlCode } = useParams();
   const [bookingCode, setBookingCode] = useState(urlCode || "");
+  const [searchType, setSearchType] = useState<"code" | "email" | "phone">("code");
   const [tracking, setTracking] = useState<TrackingResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -40,9 +40,14 @@ export function TrackingPage() {
   const [relocateError, setRelocateError] = useState("");
   const [relocateMsg, setRelocateMessage] = useState("");
 
-  const handleSearch = async (code?: string) => {
+  const handleSearch = async (code?: string, type?: "code" | "email" | "phone") => {
+    const currentType = type || searchType;
     const rawCode = code || bookingCode;
-    const searchCode = rawCode.replace("#", "").trim().toUpperCase();
+    let searchCode = rawCode.trim();
+    
+    if (currentType === "code") {
+       searchCode = searchCode.replace("#", "").toUpperCase();
+    }
 
     if (!searchCode) return;
 
@@ -111,7 +116,14 @@ export function TrackingPage() {
 
   useEffect(() => {
     if (urlCode) {
-      handleSearch(urlCode);
+      let inferredType: "code" | "email" | "phone" = "code";
+      if (urlCode.includes("@")) {
+         inferredType = "email";
+      } else if (/^\d+$/.test(urlCode)) {
+         inferredType = "phone";
+      }
+      setSearchType(inferredType);
+      handleSearch(urlCode, inferredType);
     }
   }, [urlCode]);
 
@@ -146,13 +158,47 @@ export function TrackingPage() {
                </p>
             </div>
 
+            <div className="w-full max-w-2xl mb-6 flex justify-center gap-3">
+              <button
+                 onClick={() => { setSearchType("code"); setBookingCode(""); }}
+                 className={`px-6 py-2.5 rounded-full text-sm font-bold uppercase tracking-wider flex items-center gap-2 transition-all ${searchType === "code" ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25" : "bg-white/10 text-white hover:bg-white/20 border border-white/5"}`}
+              >
+                <Hash className="size-4" /> Booking Code
+              </button>
+              <button
+                 onClick={() => { setSearchType("email"); setBookingCode(""); }}
+                 className={`px-6 py-2.5 rounded-full text-sm font-bold uppercase tracking-wider flex items-center gap-2 transition-all ${searchType === "email" ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25" : "bg-white/10 text-white hover:bg-white/20 border border-white/5"}`}
+              >
+                <Mail className="size-4" /> Email
+              </button>
+              <button
+                 onClick={() => { setSearchType("phone"); setBookingCode(""); }}
+                 className={`px-6 py-2.5 rounded-full text-sm font-bold uppercase tracking-wider flex items-center gap-2 transition-all ${searchType === "phone" ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25" : "bg-white/10 text-white hover:bg-white/20 border border-white/5"}`}
+              >
+                <Phone className="size-4" /> Phone
+              </button>
+            </div>
+
             <div className="w-full max-w-2xl bg-white/5 backdrop-blur-2xl p-2 rounded-[2.5rem] border border-white/10 shadow-2xl flex flex-col sm:flex-row gap-2">
                <div className="flex-1 relative">
-                  <Search className="absolute left-6 top-1/2 -translate-y-1/2 size-5 text-slate-500" />
+                  {searchType === "code" && <Hash className="absolute left-6 top-1/2 -translate-y-1/2 size-5 text-slate-500" />}
+                  {searchType === "email" && <Mail className="absolute left-6 top-1/2 -translate-y-1/2 size-5 text-slate-500" />}
+                  {searchType === "phone" && <Phone className="absolute left-6 top-1/2 -translate-y-1/2 size-5 text-slate-500" />}
                   <Input
-                    placeholder="Enter Booking Code (e.g. BK-12345)"
+                    placeholder={
+                      searchType === "code" ? "Enter Booking Code (e.g. BK-12345)" :
+                      searchType === "email" ? "Enter Email Address" :
+                      "Enter Phone Number"
+                    }
+                    type={searchType === "email" ? "email" : searchType === "phone" ? "tel" : "text"}
                     value={bookingCode}
-                    onChange={(e) => setBookingCode(e.target.value.replace(/[#\s]/g, "").toUpperCase())}
+                    onChange={(e) => {
+                      if (searchType === "code") {
+                         setBookingCode(e.target.value.replace(/[#\s]/g, "").toUpperCase());
+                      } else {
+                         setBookingCode(e.target.value);
+                      }
+                    }}
                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                     className="h-16 bg-transparent border-none pl-14 text-white placeholder:text-slate-600 text-lg font-bold focus-visible:ring-0"
                   />
