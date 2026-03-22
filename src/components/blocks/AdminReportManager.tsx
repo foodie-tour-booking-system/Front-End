@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { ReportService, type ReportResponse } from "@/services/ReportService";
 import { format } from "date-fns";
-import { CalendarDays, DollarSign, Activity, Users, FileText, ArrowUpRight, ArrowDownRight, RefreshCw, AlertTriangle } from "lucide-react";
+import { CalendarDays, DollarSign, Activity, Users, FileText, ArrowUpRight, ArrowDownRight, RefreshCw, AlertTriangle, PieChart as PieChartIcon, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from "recharts";
 
 export function AdminReportManager() {
   const [reportData, setReportData] = useState<ReportResponse | null>(null);
@@ -40,6 +41,51 @@ export function AdminReportManager() {
   const formatCurrency = (amount: number | undefined) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
   };
+
+  const { pieData, lineData } = useMemo(() => {
+    if (!reportData) return { pieData: [], lineData: [] };
+
+    const pData = [
+      { name: "Completed", value: reportData.bookingCompleted || 0, color: "#3b82f6" },
+      { name: "Cancelled", value: reportData.bookingCancelled || 0, color: "#f97316" }
+    ];
+
+    const lMap = new Map<string, { dateStr: string; timestamp: number; income: number; revenue: number }>();
+
+    reportData.incomeList?.forEach((t: any) => {
+      if (t.createdAt) {
+        const dStr = format(new Date(t.createdAt), "MMM dd");
+        const ts = new Date(t.createdAt).getTime();
+        if (!lMap.has(dStr)) lMap.set(dStr, { dateStr: dStr, timestamp: ts, income: 0, revenue: 0 });
+        const cur = lMap.get(dStr)!;
+        cur.income += t.amount || 0;
+        if (ts < cur.timestamp) cur.timestamp = ts;
+      }
+    });
+
+    // The user strictly asked to "sort theo field createdAt" which means Bookings might have createdAt (or fallback)
+    reportData.bookingCompletedList?.forEach((b: any) => {
+      const bDate = b.createdAt || b.departureTime;
+      if (bDate) {
+        const dStr = format(new Date(bDate), "MMM dd");
+        const ts = new Date(bDate).getTime();
+        if (!lMap.has(dStr)) lMap.set(dStr, { dateStr: dStr, timestamp: ts, income: 0, revenue: 0 });
+        const cur = lMap.get(dStr)!;
+        cur.revenue += b.totalPrice || 0;
+        if (ts < cur.timestamp) cur.timestamp = ts;
+      }
+    });
+
+    const lData = Array.from(lMap.values())
+      .sort((a, b) => a.timestamp - b.timestamp)
+      .map(item => ({
+        date: item.dateStr,
+        Income: item.income,
+        Revenue: item.revenue
+      }));
+
+    return { pieData: pData, lineData: lData };
+  }, [reportData]);
 
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-8 lg:px-12 bg-background min-h-full">
@@ -170,6 +216,68 @@ export function AdminReportManager() {
                 <div>
                   <h3 className="font-semibold text-muted-foreground text-sm uppercase tracking-wider mb-1">Total Customers Served</h3>
                   <div className="text-2xl font-black text-foreground">{reportData.totalCustomer}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-6">
+              {/* Pie Chart */}
+              <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-4">
+                <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                  <PieChartIcon className="w-5 h-5 text-primary" />
+                  Booking Status Ratio
+                </h3>
+                <div className="h-[300px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={pieData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={80}
+                        paddingAngle={5}
+                        dataKey="value"
+                      >
+                        {pieData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <RechartsTooltip formatter={(value: any) => [value, "Bookings"]} contentStyle={{ borderRadius: "8px" }} />
+                      <Legend verticalAlign="bottom" height={36} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Line Chart */}
+              <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-4 lg:col-span-2">
+                <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5 text-primary" />
+                  Income vs Revenue Timeline
+                </h3>
+                <div className="h-[300px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={lineData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                      <XAxis dataKey="date" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+                      <YAxis 
+                        stroke="#888888" 
+                        fontSize={12} 
+                        tickLine={false} 
+                        axisLine={false} 
+                        tickFormatter={(value) => `₫${(value/1000000).toFixed(1)}M`}
+                      />
+                      <RechartsTooltip 
+                        formatter={(value: any) => formatCurrency(Number(value) || 0)}
+                        contentStyle={{ borderRadius: "8px", border: "1px solid #e2e8f0" }}
+                      />
+                      <Legend verticalAlign="top" height={36} />
+                      <Line type="monotone" dataKey="Income" stroke="#22c55e" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                      <Line type="monotone" dataKey="Revenue" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
                 </div>
               </div>
             </div>
