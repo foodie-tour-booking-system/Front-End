@@ -1,6 +1,7 @@
 import Cookies from "js-cookie";
 
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+// const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+const BASE_URL = "https://api.felixiter.xyz";
 
 interface RequestOptions extends Omit<RequestInit, "body"> {
   body?: any;
@@ -10,7 +11,10 @@ interface RequestOptions extends Omit<RequestInit, "body"> {
   };
 }
 
-async function request<T>(endpoint: string, options: RequestOptions = {}): Promise<{ data?: T; error?: any }> {
+async function request<T>(
+  endpoint: string,
+  options: RequestOptions = {},
+): Promise<{ data?: T; error?: any }> {
   try {
     const token = Cookies.get("token");
     const headers = new Headers(options.headers);
@@ -70,7 +74,10 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
       return { error: errorData || response.statusText };
     }
 
-    if (response.status === 204 || response.headers.get("content-length") === "0") {
+    if (
+      response.status === 204 ||
+      response.headers.get("content-length") === "0"
+    ) {
       return { data: undefined as any };
     }
 
@@ -84,16 +91,20 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
     // Fallback to text
     const textData = await response.text();
     return { data: textData as any };
-
   } catch (err) {
     return { error: err instanceof Error ? err.message : String(err) };
   }
 }
 
 export const apiClient = {
-  GET: <T = any>(endpoint: string, options?: RequestOptions) => request<T>(endpoint, { ...options, method: "GET" }),
-  POST: <T = any>(endpoint: string, options?: RequestOptions) => request<T>(endpoint, { ...options, method: "POST" }),
-  PUT: <T = any>(endpoint: string, options?: RequestOptions) => request<T>(endpoint, { ...options, method: "PUT" }),
-  DELETE: <T = any>(endpoint: string, options?: RequestOptions) => request<T>(endpoint, { ...options, method: "DELETE" }),
-  PATCH: <T = any>(endpoint: string, options?: RequestOptions) => request<T>(endpoint, { ...options, method: "PATCH" }),
+  GET: <T = any>(endpoint: string, options?: RequestOptions) =>
+    request<T>(endpoint, { ...options, method: "GET" }),
+  POST: <T = any>(endpoint: string, options?: RequestOptions) =>
+    request<T>(endpoint, { ...options, method: "POST" }),
+  PUT: <T = any>(endpoint: string, options?: RequestOptions) =>
+    request<T>(endpoint, { ...options, method: "PUT" }),
+  DELETE: <T = any>(endpoint: string, options?: RequestOptions) =>
+    request<T>(endpoint, { ...options, method: "DELETE" }),
+  PATCH: <T = any>(endpoint: string, options?: RequestOptions) =>
+    request<T>(endpoint, { ...options, method: "PATCH" }),
 };
