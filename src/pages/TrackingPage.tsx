@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { BookingService, type TrackingResponse } from "@/services/BookingService";
 import { Navbar } from "@/components/blocks/Navbar";
 import { Footer } from "@/components/blocks/Footer";
@@ -10,7 +10,6 @@ import {
   MapPin,
   Clock,
   CheckCircle2,
-  Circle,
   Loader2,
   AlertCircle,
   Navigation,
@@ -19,7 +18,6 @@ import {
   RefreshCw,
   Hash,
   CalendarDays,
-  ArrowRight
 } from "lucide-react";
 import { ScheduleService, type ScheduleResponse } from "@/services/ScheduleService";
 import { format, parseISO } from "date-fns";
@@ -52,11 +50,11 @@ export function TrackingPage() {
     setOtp("");
     setRelocateToken("");
     setSelectedScheduleId("");
-    
+
     try {
       const res = await BookingService.getTracking({ bookingCode: searchCode });
       setTracking(res);
-      
+
       // Fetch booking details to get tourId and schedules
       try {
          const bookingDetails = await BookingService.getBookingById({ bookingCode: searchCode });
@@ -96,10 +94,10 @@ export function TrackingPage() {
     setRelocateState("verifying");
     setRelocateError("");
     try {
-      await BookingService.verifyBooking({ 
-         bookingCode: tracking.bookingCode, 
-         otp, 
-         scheduleId: Number(selectedScheduleId) 
+      await BookingService.verifyBooking({
+         bookingCode: tracking.bookingCode,
+         otp,
+         scheduleId: Number(selectedScheduleId)
       }, relocateToken);
       setRelocateState("success");
       setRelocateMessage("Your relocation request has been sent for approval.");
@@ -308,7 +306,7 @@ export function TrackingPage() {
                              <div className="space-y-6 animate-in fade-in duration-500">
                                 <div>
                                    <label className="text-xs font-black text-foreground uppercase tracking-widest mb-3 block">Available Schedules</label>
-                                   <select 
+                                   <select
                                       className="w-full h-14 px-5 rounded-2xl bg-secondary/50 border border-border focus:ring-2 focus:ring-primary focus:outline-none appearance-none font-medium"
                                       value={selectedScheduleId}
                                       onChange={(e) => setSelectedScheduleId(e.target.value === "" ? "" : Number(e.target.value))}

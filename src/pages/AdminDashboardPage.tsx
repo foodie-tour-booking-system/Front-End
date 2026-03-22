@@ -45,47 +45,11 @@ export function AdminDashboardPage() {
     setCurrentView("permissions_overview");
   };
 
-  const goToPermissionsEdit = (_userId: string) => {
-    setCurrentView("permissions_edit");
-  };
+
 
   const goBackToDirectory = () => {
     setCurrentView("employees");
   };
-
-  // Nav items config
-  const navItems: { label: string; view: AdminView | "employees_group"; icon: React.ReactNode; views: AdminView[] }[] = [
-    {
-      label: "Tours Inventory",
-      view: "employees_group",
-      icon: <Map className="w-5 h-5" />,
-      views: ["tours"],
-    },
-    {
-      label: "Employee Directory",
-      view: "employees_group",
-      icon: <Users className="w-5 h-5" />,
-      views: ["employees", "permissions_overview", "permissions_edit"],
-    },
-    {
-      label: "Roles & Access",
-      view: "employees_group",
-      icon: <Shield className="w-5 h-5" />,
-      views: ["roles"],
-    },
-    {
-      label: "Permission Catalog",
-      view: "employees_group",
-      icon: <Lock className="w-5 h-5" />,
-      views: ["permission_catalog"],
-    },
-    {
-      label: "System Settings",
-      view: "employees_group",
-      icon: <Settings className="w-5 h-5" />,
-      views: [],
-    },
-  ];
 
   return (
     <div className="flex h-screen overflow-hidden bg-background text-foreground font-sans transition-colors duration-200">
@@ -245,7 +209,6 @@ export function AdminDashboardPage() {
         {currentView === "employees" && (
           <AdminEmployeeDirectory
             onNavigateToPermissions={goToPermissionsOverview}
-            onNavigateToEdit={goToPermissionsEdit}
           />
         )}
         {currentView === "permissions_overview" && (
