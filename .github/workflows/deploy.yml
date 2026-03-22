@@ -18,29 +18,28 @@ jobs:
           node-version: '22'
 
       - name: Install dependencies
-        run: |
-          npm install
+        run: npm install
 
       - name: Build project
-        run: |
-          npm run build
+        run: npm run build
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: build-dist
-          path: dist/
+          path: dist/ 
           retention-days: 1 
 
   deploy_to_s3:
     needs: build_job
     runs-on: ubuntu-latest
     steps:
+  
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: build-dist
-          path: . 
+          path: dist 
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -51,8 +50,13 @@ jobs:
 
       - name: Deploy to S3
         run: |
-          # dist/ lúc này đã có sẵn ở thư mục hiện tại
-          aws s3 sync dist/ s3://${{ secrets.S3_BUCKET_NAME }} --delete
+          
+          if [ -d "dist" ]; then
+            aws s3 sync dist/ s3://${{ secrets.S3_BUCKET_NAME }} --delete
+          else
+            echo "Error: dist directory not found"
+            exit 1
+          fi
 
       - name: CloudFront Invalidation
         run: |
