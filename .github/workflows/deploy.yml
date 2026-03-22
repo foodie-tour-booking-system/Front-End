@@ -8,7 +8,6 @@ on:
 jobs:
   build_job:
     runs-on: ubuntu-latest
-    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -17,16 +16,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm' 
 
       - name: Install dependencies
         run: |
-          echo "Installing dependencies..."
           npm install
 
       - name: Build project
         run: |
-          echo "Building project..."
           npm run build
 
       - name: Upload artifact
@@ -44,7 +40,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-dist
-          path: dist/
+          path: . 
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -55,6 +51,7 @@ jobs:
 
       - name: Deploy to S3
         run: |
+          # dist/ lúc này đã có sẵn ở thư mục hiện tại
           aws s3 sync dist/ s3://${{ secrets.S3_BUCKET_NAME }} --delete
 
       - name: CloudFront Invalidation
