@@ -37,7 +37,10 @@ export function BookingStep1({ tourId, tour, form, onUpdateForm, onNext }: Booki
     if (!tourId) return;
     setLoadingSchedules(true);
     ScheduleService.getSchedules({ tourId, scheduleStatus: "ACTIVE" })
-      .then(setSchedules)
+      .then((data) => {
+        console.log("[BookingStep1] Schedules loaded:", JSON.stringify(data, null, 2));
+        setSchedules(data);
+      })
       .catch(console.error)
       .finally(() => setLoadingSchedules(false));
   }, [tourId]);
@@ -117,13 +120,24 @@ export function BookingStep1({ tourId, tour, form, onUpdateForm, onNext }: Booki
                   }}
                   disabled={(d) => {
                     const dateStr = format(d, "yyyy-MM-dd");
-                    const hasDeparture = schedules.some((s) => !s.isTemplate && s.departureAt?.startsWith(dateStr));
-                    const isWithinTemplate = schedules.some((s) =>
-                      s.isTemplate &&
-                      s.startDate && s.endDate &&
-                      dateStr >= s.startDate && dateStr <= s.endDate
+                    const today = new Date(new Date().setHours(0, 0, 0, 0));
+                    if (d < today) return true; // always disable past dates
+
+                    const hasDeparture = schedules.some(
+                      (s) => !s.isTemplate && s.departureAt?.startsWith(dateStr)
                     );
-                    return (!hasDeparture && !isWithinTemplate) || d < new Date(new Date().setHours(0, 0, 0, 0));
+
+                    // Treat as template if isTemplate===true, OR if startDate+endDate exist and no departureAt
+                    const isWithinTemplate = schedules.some((s) => {
+                      const isTemplateSchedule = s.isTemplate === true || (!s.departureAt && s.startDate && s.endDate);
+                      if (!isTemplateSchedule) return false;
+                      if (!s.startDate || !s.endDate) return false;
+                      const start = s.startDate.slice(0, 10);
+                      const end = s.endDate.slice(0, 10);
+                      return dateStr >= start && dateStr <= end;
+                    });
+
+                    return !hasDeparture && !isWithinTemplate;
                   }}
                   className="rounded-md border-none [--cell-size:2.8rem]"
                 />
@@ -140,10 +154,16 @@ export function BookingStep1({ tourId, tour, form, onUpdateForm, onNext }: Booki
                     <div className="grid grid-cols-2 gap-3">
                       {schedules
                         .filter((s) => {
-                          if (!s.isTemplate) {
+                          const isTemplateSchedule = s.isTemplate === true || (!s.departureAt && s.startDate && s.endDate);
+                          if (!isTemplateSchedule) {
+                            // Fixed schedule – match by departureAt date
                             return s.departureAt?.startsWith(form.date);
                           } else {
-                            return s.startDate && s.endDate && form.date >= s.startDate && form.date <= s.endDate;
+                            // Template schedule – match any date within its range
+                            if (!s.startDate || !s.endDate) return false;
+                            const start = s.startDate.slice(0, 10);
+                            const end = s.endDate.slice(0, 10);
+                            return form.date >= start && form.date <= end;
                           }
                         })
                         .map((sch) => {

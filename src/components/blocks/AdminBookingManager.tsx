@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -22,6 +22,7 @@ import {
   Clock,
   MapPin,
   Hash,
+  Flag,
 } from "lucide-react";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -383,6 +384,42 @@ export function AdminBookingManager() {
   const [relocateFilter, setRelocateFilter] = useState<string>("");
   const [processModal, setProcessModal] = useState<RelocateBookingResponse | null>(null);
 
+  // ── Mark Completed state ──
+  const [completingCode, setCompletingCode] = useState<string | null>(null);
+  const [notification, setNotification] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [confirmTarget, setConfirmTarget] = useState<string | null>(null); // bookingCode waiting for confirm
+  const notifTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showNotification = (type: "success" | "error", message: string) => {
+    if (notifTimerRef.current) clearTimeout(notifTimerRef.current);
+    setNotification({ type, message });
+    notifTimerRef.current = setTimeout(() => setNotification(null), 4000);
+  };
+
+  const handleMarkCompleted = async (bookingCode: string) => {
+    setConfirmTarget(bookingCode);
+  };
+
+  const handleConfirmComplete = async () => {
+    if (!confirmTarget) return;
+    const bookingCode = confirmTarget;
+    setConfirmTarget(null);
+    setCompletingCode(bookingCode);
+    try {
+      await BookingService.markCompleted({ bookingCode });
+      setBookings((prev) =>
+        prev.map((b) =>
+          b.bookingCode === bookingCode ? { ...b, bookingStatus: "COMPLETED" } : b
+        )
+      );
+      showNotification("success", `Booking ${bookingCode} đã được hoàn tất!`);
+    } catch (err: any) {
+      showNotification("error", err?.message ?? "Không thể hoàn tất booking.");
+    } finally {
+      setCompletingCode(null);
+    }
+  };
+
   // ── Fetch all bookings ──
   const fetchBookings = async () => {
     setBookingsLoading(true);
@@ -445,6 +482,67 @@ export function AdminBookingManager() {
           onClose={() => setProcessModal(null)}
           onProcessed={fetchRelocateRequests}
         />
+      )}
+
+      {/* Confirm Complete Modal */}
+      {confirmTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="w-full max-w-sm bg-card border border-border rounded-2xl shadow-2xl p-6 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-500/10 border border-green-500/20">
+                <Flag className="w-5 h-5 text-green-600" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-foreground">Hoàn tất Tour</h3>
+                <p className="text-xs text-muted-foreground">Xác nhận hành động này</p>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground mb-6">
+              Bạn có chắc muốn đánh dấu booking{" "}
+              <span className="font-mono font-bold text-foreground">{confirmTarget}</span>{" "}
+              là đã <span className="font-bold text-green-600">hoàn tất</span>? Hành động này không thể hoàn tác.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <Button variant="outline" onClick={() => setConfirmTarget(null)}>Hủy</Button>
+              <Button
+                onClick={handleConfirmComplete}
+                className="gap-1.5 font-bold bg-green-600 hover:bg-green-700 text-white"
+              >
+                <Flag className="w-4 h-4" />
+                Xác nhận hoàn tất
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {notification && (
+        <div
+          className={`fixed bottom-6 right-6 z-[60] flex items-start gap-3 px-5 py-4 rounded-2xl shadow-2xl border max-w-sm animate-in slide-in-from-bottom-4 duration-300 ${
+            notification.type === "success"
+              ? "bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-800 text-green-800 dark:text-green-300"
+              : "bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-800 text-red-800 dark:text-red-300"
+          }`}
+        >
+          {notification.type === "success" ? (
+            <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
+          ) : (
+            <AlertTriangle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+          )}
+          <div className="flex-1">
+            <p className="text-sm font-semibold">
+              {notification.type === "success" ? "Thành công!" : "Lỗi"}
+            </p>
+            <p className="text-xs mt-0.5 opacity-80">{notification.message}</p>
+          </div>
+          <button
+            onClick={() => setNotification(null)}
+            className="text-current opacity-50 hover:opacity-100 transition-opacity"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
       )}
 
       <div className="flex-1 overflow-y-auto">
@@ -604,14 +702,32 @@ export function AdminBookingManager() {
                             </td>
                             {/* Actions */}
                             <td className="px-6 py-4 whitespace-nowrap text-right">
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => setDetailModal(bk.bookingCode!)}
-                                className="h-8 w-8 p-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
-                              >
-                                <ChevronRight className="w-4 h-4" />
-                              </Button>
+                              <div className="flex items-center justify-end gap-2">
+                                {bk.bookingStatus === "CONFIRMED" && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleMarkCompleted(bk.bookingCode!)}
+                                    disabled={completingCode === bk.bookingCode}
+                                    className="h-8 gap-1.5 font-semibold text-xs text-green-600 border-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                                  >
+                                    {completingCode === bk.bookingCode ? (
+                                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                    ) : (
+                                      <Flag className="w-3.5 h-3.5" />
+                                    )}
+                                    Hoàn tất
+                                  </Button>
+                                )}
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => setDetailModal(bk.bookingCode!)}
+                                  className="h-8 w-8 p-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                                >
+                                  <ChevronRight className="w-4 h-4" />
+                                </Button>
+                              </div>
                             </td>
                           </tr>
                         ))

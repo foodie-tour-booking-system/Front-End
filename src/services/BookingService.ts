@@ -184,6 +184,15 @@ export const BookingService = {
   },
 
   /**
+   * POST /api/booking/{bookingCode}/mark-completed
+   */
+  markCompleted: async (pathParams: { bookingCode: string }): Promise<string> => {
+    const { data, error } = await apiClient.POST("/api/booking/{bookingCode}/mark-completed" as any, { params: { path: pathParams } });
+    if (error) throw error;
+    return data as string;
+  },
+
+  /**
    * GET /api/v1/customer/tracking/{bookingCode}
    */
   getTracking: async (pathParams: { bookingCode: string }): Promise<TrackingResponse> => {
