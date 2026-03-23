@@ -597,7 +597,7 @@ export function AdminRouteManager() {
 
   useEffect(() => {
     fetchRoutes(statusFilter || undefined);
-    TourService.getAllTours().then(setTours).catch(console.error);
+    TourService.getAllTours({ status: "ACTIVE" }).then(setTours).catch(console.error);
   }, [statusFilter]);
 
   const refresh = () => fetchRoutes(statusFilter || undefined);

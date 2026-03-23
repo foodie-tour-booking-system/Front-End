@@ -443,8 +443,8 @@ export function AdminScheduleManager() {
 
   useEffect(() => {
     fetchSchedules(statusFilter || undefined, idFilter || undefined);
-    TourService.getAllTours().then(setTours).catch(console.error);
-    RouteService.getAllRoutes().then(setRoutes).catch(console.error);
+    TourService.getAllTours({ status: "ACTIVE" }).then(setTours).catch(console.error);
+    RouteService.getAllRoutes({ routeStatus: "ACTIVE" }).then(setRoutes).catch(console.error);
   }, [statusFilter]);
 
 
