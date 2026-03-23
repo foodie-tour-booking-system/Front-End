@@ -75,9 +75,12 @@ export const EmployeeService = {
 
   /**
    * POST /api/employee/verify-password
+   * Returns a short-lived Access-Token string scoped to CHANGE_PASSWORD.
    */
-  verifyCurrentPassword: async (body: VerifyPasswordRequest, queryParams?: { scope: string, ttl: number }): Promise<string> => {
-    const { data, error } = await apiClient.POST("/api/employee/verify-password" as any, { params: { query: queryParams }, body: body as any });
+  verifyCurrentPassword: async (body: VerifyPasswordRequest): Promise<string> => {
+    const { data, error } = await apiClient.POST("/api/employee/verify-password" as any, {
+      body: body as any,
+    });
     if (error) throw error;
     return data as string;
   },
@@ -102,9 +105,13 @@ export const EmployeeService = {
 
   /**
    * PATCH /api/employee/update-password
+   * accessToken: the short-lived token returned by verifyCurrentPassword.
    */
-  updatePassword: async (body: SetPasswordRequest): Promise<string> => {
-    const { data, error } = await apiClient.PATCH("/api/employee/update-password" as any, { body: body as any });
+  updatePassword: async (body: SetPasswordRequest, accessToken: string): Promise<string> => {
+    const { data, error } = await apiClient.PATCH("/api/employee/update-password" as any, {
+      body: body as any,
+      headers: { "Access-Token": accessToken },
+    });
     if (error) throw error;
     return data as string;
   },

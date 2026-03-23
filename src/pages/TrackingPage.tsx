@@ -21,6 +21,8 @@ import {
   RefreshCw,
   Hash,
   CalendarDays,
+  XCircle,
+  AlertTriangle,
 } from "lucide-react";
 import {
   ScheduleService,
@@ -45,6 +47,34 @@ export function TrackingPage() {
   const [otp, setOtp] = useState("");
   const [relocateError, setRelocateError] = useState("");
   const [relocateMsg, setRelocateMessage] = useState("");
+
+  // Cancel State
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelEmail, setCancelEmail] = useState("");
+  const [cancelState, setCancelState] = useState<"idle" | "confirming" | "loading" | "done">("idle");
+  const [cancelError, setCancelError] = useState("");
+
+  const handleCancelBooking = async () => {
+    if (!tracking) return;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cancelEmail)) {
+      setCancelError("Please enter a valid email address to receive confirmation.");
+      return;
+    }
+    setCancelState("loading");
+    setCancelError("");
+    try {
+      await BookingService.cancelBooking({
+        bookingCode: tracking.bookingCode,
+        reason: cancelReason.trim() || undefined,
+        email: cancelEmail.trim(),
+      });
+      setCancelState("done");
+      setTracking((prev) => prev ? { ...prev, bookingStatus: "CANCELLED" } : prev);
+    } catch (err: any) {
+      setCancelError(err?.message ?? "Unable to cancel booking. Please try again.");
+      setCancelState("confirming");
+    }
+  };
 
   const handleSearch = async (code?: string) => {
     const rawCode = code || bookingCode;
@@ -231,7 +261,7 @@ export function TrackingPage() {
           <div className="container mx-auto px-6 -mt-10 mb-20 relative z-20 animate-in fade-in slide-in-from-bottom-5 duration-1000">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               {/* Left Column: Tour & Guest Info */}
-              <div className="lg:col-span-4 space-y-8">
+              <div className="lg:col-span-5 space-y-8">
                 {/* Main Card */}
                 <div className="bg-card border border-border rounded-[2.5rem] p-10 shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden relative">
                   <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none">
@@ -338,7 +368,8 @@ export function TrackingPage() {
                 </div>
               </div>
 
-              <div className="lg:col-span-8 flex flex-col gap-8">
+
+              <div className="lg:col-span-7 flex flex-col gap-8">
                 {/* Real-time map placeholder or itinerary can go here */}
                 <div className="bg-card border border-border rounded-[2.5rem] p-10 shadow-xl shadow-slate-200/50 dark:shadow-none flex-1">
                   <div className="flex items-center justify-between mb-8">
@@ -492,6 +523,131 @@ export function TrackingPage() {
                     </div>
                   )}
                 </div>
+
+                {/* ── Cancel Booking Card (below Relocate) ── */}
+                {(tracking.bookingStatus === "PENDING" || tracking.bookingStatus === "CONFIRMED") && cancelState !== "done" && (
+                  <div className="bg-slate-900 rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-red-900/20 to-transparent pointer-events-none" />
+                    <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none">
+                      <XCircle className="size-32" />
+                    </div>
+
+                    <div className="relative z-10">
+                      <div className="flex items-center justify-between mb-8">
+                        <div className="flex items-center gap-4">
+                          <div className="size-12 rounded-2xl bg-red-500/20 border border-red-500/20 flex items-center justify-center shrink-0">
+                            <XCircle className="size-6 text-red-400" />
+                          </div>
+                          <div>
+                            <h3 className="text-2xl font-black uppercase tracking-tight text-white mb-1">Cancel Booking</h3>
+                            <p className="text-white/50 font-medium text-sm">Manual refund request after cancellation.</p>
+                          </div>
+                        </div>
+                        <div className="px-4 py-2 bg-red-500/15 text-red-400 rounded-full text-[10px] font-black tracking-widest uppercase border border-red-500/20 flex items-center gap-2">
+                          <XCircle className="size-3" /> Cancel
+                        </div>
+                      </div>
+
+                      {cancelState === "idle" && (
+                        <div className="animate-in fade-in duration-300">
+                          <p className="text-white/50 text-sm leading-relaxed mb-8 max-w-lg">
+                            Want to cancel your tour? Enter your email to receive confirmation and begin the refund process.
+                          </p>
+                          <button
+                            onClick={() => setCancelState("confirming")}
+                            className="w-full sm:w-auto px-8 py-4 rounded-2xl border-2 border-red-500/30 text-red-400 font-black text-sm hover:bg-red-500/10 hover:border-red-500/50 transition-all duration-200"
+                          >
+                            Proceed to Cancel →
+                          </button>
+                        </div>
+                      )}
+
+                      {cancelState === "confirming" && (
+                        <div className="animate-in slide-in-from-bottom-3 duration-300">
+                          {/* Info row */}
+                          <div className="bg-white/5 border border-white/10 rounded-2xl px-6 py-4 flex items-center justify-between mb-6">
+                            <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Booking Reference</span>
+                            <span className="font-mono font-black text-red-400">{tracking.bookingCode}</span>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                            {/* Email */}
+                            <div className="md:col-span-2">
+                              <label className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2 block">Confirmation Email *</label>
+                              <input
+                                type="email"
+                                value={cancelEmail}
+                                onChange={(e) => setCancelEmail(e.target.value)}
+                                placeholder="your@email.com"
+                                className="w-full h-14 px-5 rounded-2xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/30 transition-all"
+                              />
+                            </div>
+
+                            {/* Reason */}
+                            <div className="md:col-span-2">
+                              <label className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2 block">
+                                Cancellation Reason <span className="text-white/25 normal-case font-normal">(optional)</span>
+                              </label>
+                              <textarea
+                                className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 text-sm resize-none h-24 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/30 transition-all"
+                                placeholder="Tell us why you're cancelling…"
+                                value={cancelReason}
+                                onChange={(e) => setCancelReason(e.target.value)}
+                              />
+                            </div>
+                          </div>
+
+                          {cancelError && (
+                            <div className="flex items-start gap-2 text-sm text-red-400 bg-red-900/30 p-4 rounded-2xl border border-red-500/20 mb-5">
+                              <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />{cancelError}
+                            </div>
+                          )}
+
+                          <div className="flex flex-col sm:flex-row gap-3">
+                            <button
+                              onClick={() => { setCancelState("idle"); setCancelError(""); }}
+                              className="sm:w-1/3 py-4 rounded-2xl border border-white/10 text-white/60 font-bold text-sm hover:bg-white/5 transition-all"
+                            >
+                              Go Back
+                            </button>
+                            <button
+                              onClick={handleCancelBooking}
+                              className="sm:w-2/3 py-4 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-black text-sm transition-all shadow-xl shadow-red-900/30"
+                            >
+                              Confirm Cancellation
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {cancelState === "loading" && (
+                        <div className="flex flex-col items-center gap-4 py-10 animate-in fade-in duration-200">
+                          <div className="relative">
+                            <div className="size-16 rounded-full border-2 border-red-500/20 animate-ping absolute inset-0" />
+                            <Loader2 className="size-16 animate-spin text-red-400" />
+                          </div>
+                          <p className="text-white/50 font-medium">Processing your cancellation request…</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {cancelState === "done" && (
+                  <div className="bg-slate-900 rounded-[2.5rem] p-10 text-center relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-red-900/30 to-transparent pointer-events-none" />
+                    <div className="relative z-10 py-6">
+                      <div className="size-20 mx-auto mb-6 rounded-full bg-red-500/20 border border-red-500/30 flex items-center justify-center">
+                        <XCircle className="size-10 text-red-400" />
+                      </div>
+                      <p className="text-[10px] font-black text-red-400 uppercase tracking-[0.3em] mb-3">Successfully Cancelled</p>
+                      <p className="font-black text-white text-2xl mb-3">Booking has been cancelled</p>
+                      <p className="text-white/40 leading-relaxed">
+                        Confirmation and refund details will be sent to your email as soon as possible.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

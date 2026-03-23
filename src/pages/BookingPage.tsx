@@ -19,6 +19,7 @@ export interface BookingFormData {
   phone: string;
   paymentMethod: "VNPAY" | "VISA";
   tourType: "GROUP" | "PRIVATE";
+  isDeposit: boolean;
 }
 
 const DEFAULT_FORM: BookingFormData = {
@@ -33,6 +34,7 @@ const DEFAULT_FORM: BookingFormData = {
   phone: "",
   paymentMethod: "VNPAY",
   tourType: "GROUP",
+  isDeposit: false,
 };
 
 export function BookingPage() {

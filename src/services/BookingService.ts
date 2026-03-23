@@ -30,7 +30,7 @@ export interface BookingResponse {
   bookingCode?: string;
   totalPrice?: number;
   pickupLocation?: string;
-  bookingStatus?: "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED" | "RESCHEDULED";
+  bookingStatus?: "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED" | "RESCHEDULED" | "REQUESTED_CANCELLATION";
   departureTime?: string;
   deposit?: boolean;
   amountPaid?: number;
@@ -199,6 +199,24 @@ export const BookingService = {
     const { data, error } = await apiClient.GET("/api/v1/customer/tracking/{bookingCode}" as any, { params: { path: pathParams } });
     if (error) throw error;
     return data as TrackingResponse;
+  },
+
+  /**
+   * POST /api/booking/cancel
+   */
+  cancelBooking: async (body: { bookingCode: string; reason?: string; email?: string }): Promise<string> => {
+    const { data, error } = await apiClient.POST("/api/booking/cancel" as any, { body: body as any });
+    if (error) throw error;
+    return data as string;
+  },
+
+  /**
+   * PUT /api/booking/{bookingCode}/approve-refund
+   */
+  approveRefund: async (pathParams: { bookingCode: string }): Promise<string> => {
+    const { data, error } = await apiClient.PUT("/api/booking/{bookingCode}/approve-refund" as any, { params: { path: pathParams } });
+    if (error) throw error;
+    return data as string;
   },
 
 };

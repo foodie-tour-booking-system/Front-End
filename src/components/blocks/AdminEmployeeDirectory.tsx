@@ -17,6 +17,7 @@ import {
   type EmployeeResponse,
   type EmployeeUpdateRequest,
 } from "@/services/EmployeeService";
+import { RoleService, type RoleResponse } from "@/services/RoleService";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -66,8 +67,17 @@ function EmployeeFormModal({ mode, initial, onClose, onSaved }: FormModalProps) 
     phone: initial?.phone ?? "",
     roleId: 0,
   });
+  const [roles, setRoles] = useState<RoleResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (mode === "create") {
+      RoleService.getAll({ status: "ACTIVE" })
+        .then(setRoles)
+        .catch(console.error);
+    }
+  }, [mode]);
 
   const set = <K extends keyof EmployeeCreateRequest>(
     k: K,
@@ -169,17 +179,21 @@ function EmployeeFormModal({ mode, initial, onClose, onSaved }: FormModalProps) 
 
           {mode === "create" && (
             <div>
-              <label className={labelCls}>Role ID *</label>
-              <input
-                type="number"
-                min={1}
+              <label className={labelCls}>Role *</label>
+              <select
                 className={inputCls}
                 required
                 value={form.roleId || ""}
                 onChange={(e) => set("roleId", Number(e.target.value))}
-                placeholder="e.g. 1"
                 disabled={loading}
-              />
+              >
+                <option value="" disabled>-- Select a role --</option>
+                {roles.map((r) => (
+                  <option key={r.roleId} value={r.roleId}>
+                    {r.name}
+                  </option>
+                ))}
+              </select>
             </div>
           )}
         </form>
@@ -268,7 +282,7 @@ function ChangeStatusModal({
             : `Are you sure you want to ${label.toLowerCase()}:`}
         </p>
         <p className="text-sm font-semibold text-foreground mb-5">
-          "{employee.employeeName}"
+          &ldquo;{employee.employeeName}&rdquo;
         </p>
 
         {error && (
@@ -304,12 +318,19 @@ interface ChangeRoleModalProps {
 
 function ChangeRoleModal({ employee, onClose, onDone }: ChangeRoleModalProps) {
   const [roleId, setRoleId] = useState<number>(0);
+  const [roles, setRoles] = useState<RoleResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    RoleService.getAll({ status: "ACTIVE" })
+      .then(setRoles)
+      .catch(console.error);
+  }, []);
+
   const handleSave = async () => {
     if (!roleId) {
-      setError("Please enter a valid Role ID.");
+      setError("Please select a role.");
       return;
     }
     setError("");
@@ -348,17 +369,21 @@ function ChangeRoleModal({ employee, onClose, onDone }: ChangeRoleModalProps) {
         <p className="text-sm font-semibold text-foreground mb-4">{employee.roleName ?? "—"}</p>
 
         <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
-          New Role ID *
+          New Role *
         </label>
-        <input
-          type="number"
-          min={1}
+        <select
           className={inputCls}
           value={roleId || ""}
           onChange={(e) => setRoleId(Number(e.target.value))}
-          placeholder="Enter role ID"
           disabled={loading}
-        />
+        >
+          <option value="" disabled>-- Select a role --</option>
+          {roles.map((r) => (
+            <option key={r.roleId} value={r.roleId}>
+              {r.name}
+            </option>
+          ))}
+        </select>
 
         {error && (
           <div className="mt-3 text-xs text-red-500 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-2">
@@ -609,22 +634,8 @@ export function AdminEmployeeDirectory({
                               <ShieldCheck className="w-4 h-4" />
                             </button>
 
-                            {/* Toggle Active/Inactive */}
-                            {emp.status === "ACTIVE" ? (
-                              <button
-                                title="Deactivate"
-                                onClick={() =>
-                                  setModal({
-                                    type: "changeStatus",
-                                    employee: emp,
-                                    targetStatus: "INACTIVE",
-                                  })
-                                }
-                                className="h-8 w-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-yellow-600 hover:bg-yellow-500/10 transition-colors"
-                              >
-                                <UserX className="w-4 h-4" />
-                              </button>
-                            ) : emp.status === "INACTIVE" ? (
+                            {/* Activate button — show when INACTIVE or DELETED */}
+                            {(emp.status === "INACTIVE" || emp.status === "DELETED") && (
                               <button
                                 title="Activate"
                                 onClick={() =>
@@ -638,9 +649,26 @@ export function AdminEmployeeDirectory({
                               >
                                 <UserCheck className="w-4 h-4" />
                               </button>
-                            ) : null}
+                            )}
 
-                            {/* Delete */}
+                            {/* Deactivate button — show when ACTIVE or DELETED */}
+                            {(emp.status === "ACTIVE" || emp.status === "DELETED") && (
+                              <button
+                                title="Deactivate"
+                                onClick={() =>
+                                  setModal({
+                                    type: "changeStatus",
+                                    employee: emp,
+                                    targetStatus: "INACTIVE",
+                                  })
+                                }
+                                className="h-8 w-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-yellow-600 hover:bg-yellow-500/10 transition-colors"
+                              >
+                                <UserX className="w-4 h-4" />
+                              </button>
+                            )}
+
+                            {/* Delete button — show when ACTIVE or INACTIVE */}
                             {emp.status !== "DELETED" && (
                               <button
                                 title="Delete"

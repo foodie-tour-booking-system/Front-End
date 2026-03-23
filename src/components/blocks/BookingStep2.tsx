@@ -36,6 +36,7 @@ export function BookingStep2({ tour, form, onUpdateForm, onBack, onNext }: Booki
   const adultPrice = isPrivate ? (tour?.privatePriceAdult ?? 0) : (tour?.groupPriceAdult ?? 0);
   const childPrice = isPrivate ? (tour?.privatePriceChild ?? 0) : (tour?.groupPriceChild ?? 0);
   const totalPrice = form.adultCount * adultPrice + form.childrenCount * childPrice;
+  const payAmount = form.isDeposit ? Math.round(totalPrice * 0.3) : totalPrice;
 
   const handlePay = async () => {
     setError("");
@@ -53,7 +54,7 @@ export function BookingStep2({ tour, form, onUpdateForm, onBack, onNext }: Booki
         childrenCount: form.childrenCount,
         pickupLocation: form.pickupLocation,
         customerNote: form.customerNote,
-        deposit: false,
+        deposit: form.isDeposit,
         paymentMethod: form.paymentMethod,
         tourType: form.tourType,
       });
@@ -221,12 +222,37 @@ export function BookingStep2({ tour, form, onUpdateForm, onBack, onNext }: Booki
             </div>
 
             {/* Total */}
-            <div className="pt-4 border-t border-border flex justify-between items-end mb-8">
-              <div>
-                <p className="text-sm text-muted-foreground mb-0.5">Total Price</p>
-                <p className="text-xs text-muted-foreground">Includes all taxes</p>
+            <div className="pt-4 border-t border-border mb-8 space-y-2">
+              <div className="flex justify-between items-end">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-0.5">Total Price</p>
+                  <p className="text-xs text-muted-foreground">Includes all taxes</p>
+                </div>
+                <p className="text-xl font-bold text-foreground line-through opacity-50">
+                  {form.isDeposit ? `${totalPrice.toLocaleString()} VND` : ""}
+                </p>
               </div>
-              <p className="text-3xl font-bold text-foreground">{totalPrice.toLocaleString()}<span className="text-sm font-medium ml-1">VND</span></p>
+              {form.isDeposit && (
+                <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 space-y-1.5 text-xs">
+                  <div className="flex justify-between font-bold">
+                    <span className="text-muted-foreground">Pay now (30% deposit)</span>
+                    <span className="text-primary text-base">{payAmount.toLocaleString()} VND</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Remaining (70%)</span>
+                    <span className="text-foreground">{Math.round(totalPrice * 0.7).toLocaleString()} VND</span>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground border-t border-primary/10 pt-1">
+                    Remaining amount due before departure.
+                  </p>
+                </div>
+              )}
+              {!form.isDeposit && (
+                <div className="flex justify-between items-end">
+                  <span className="text-sm text-muted-foreground">Amount due now</span>
+                  <p className="text-3xl font-bold text-foreground">{payAmount.toLocaleString()}<span className="text-sm font-medium ml-1">VND</span></p>
+                </div>
+              )}
             </div>
 
             {/* Pay Button */}

@@ -148,12 +148,12 @@ export function LoginPage() {
                 >
                   Password
                 </label>
-                <Link
+                {/* <Link
                   className="text-xs font-medium text-primary hover:text-primary/80 transition-colors"
                   to="/reset-password"
                 >
                   Forgot Password?
-                </Link>
+                </Link> */}
               </div>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
