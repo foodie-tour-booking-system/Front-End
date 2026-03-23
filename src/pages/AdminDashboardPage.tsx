@@ -38,7 +38,7 @@ export function AdminDashboardPage() {
       console.error("Logout error", error);
     } finally {
       Cookies.remove("token");
-      navigate("/login");
+      navigate("/");
     }
   };
 

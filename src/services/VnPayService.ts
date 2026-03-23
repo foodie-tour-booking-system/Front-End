@@ -17,11 +17,9 @@ export interface ApplicationContext {
   classLoader?: any;
 }
 
-export interface AutowireCapableBeanFactory {
-}
+export interface AutowireCapableBeanFactory {}
 
-export interface BeanFactory {
-}
+export interface BeanFactory {}
 
 export interface Environment {
   activeProfiles?: string[];
@@ -145,13 +143,15 @@ export interface TaglibDescriptor {
   taglibLocation?: string;
 }
 
-
 export const VnPayService = {
   /**
    * POST /api/payment/vnpay/process-ipn
    */
   processIPNFromVnpay: async (body: any): Promise<any> => {
-    const { data, error } = await apiClient.POST("/api/payment/vnpay/process-ipn" as any, { body: body as any });
+    const { data, error } = await apiClient.POST(
+      "/api/payment/vnpay/process-ipn" as any,
+      { body: body as any },
+    );
     if (error) throw error;
     return data as any;
   },
@@ -160,7 +160,10 @@ export const VnPayService = {
    * POST /api/payment/vnpay/generate-payment-url
    */
   generatePaymentUrl: async (body: PaymentRequest): Promise<string> => {
-    const { data, error } = await apiClient.POST("/api/payment/vnpay/generate-payment-url" as any, { body: body as any });
+    const { data, error } = await apiClient.POST(
+      "/api/payment/vnpay/generate-payment-url" as any,
+      { body: body as any },
+    );
     if (error) throw error;
     return data as string;
   },
@@ -168,8 +171,13 @@ export const VnPayService = {
   /**
    * GET /api/payment/vnpay/status
    */
-  processPaymentResponse: async (queryParams?: { queryParams: any }): Promise<RedirectView> => {
-    const { data, error } = await apiClient.GET("/api/payment/vnpay/status" as any, { params: { query: queryParams } });
+  processPaymentResponse: async (queryParams?: {
+    queryParams: any;
+  }): Promise<RedirectView> => {
+    const { data, error } = await apiClient.GET(
+      "/api/payment/vnpay/status" as any,
+      { params: { query: queryParams } },
+    );
     if (error) throw error;
     return data as RedirectView;
   },
@@ -178,7 +186,10 @@ export const VnPayService = {
    * GET /api/payment/vnpay/callback
    */
   handlePaymentCallback: async (queryParams: any): Promise<any> => {
-    const { data, error } = await apiClient.GET("/api/payment/vnpay/callback" as any, { params: { query: queryParams } });
+    const { data, error } = await apiClient.GET(
+      "/api/payment/vnpay/callback" as any,
+      { params: { query: queryParams } },
+    );
     if (error) throw error;
     return data as any;
   },

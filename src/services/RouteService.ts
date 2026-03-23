@@ -28,7 +28,21 @@ export interface RouteResponse {
   updatedAt?: string;
 }
 
+export interface RouteDetailImage {
+  imageId?: number;
+  imageUrl?: string;
+  createdAt?: string;
+}
 
+export interface RouteDetailResponse {
+  routeDetailId?: number;
+  locationName?: string;
+  locationOrder?: number;
+  durationAtLocation?: number;
+  routeDetailStatus?: "ACTIVE" | "INACTIVE" | "DELETED" | "DRAFT";
+  imageUrls?: string[];
+  images?: RouteDetailImage[];
+}
 
 export const RouteService = {
   /**
@@ -74,6 +88,40 @@ export const RouteService = {
     const { data, error } = await apiClient.GET("/api/routes/tour/{tourId}" as any, { params: { path: pathParams, query: queryParams } });
     if (error) throw error;
     return data as RouteResponse[];
+  },
+
+  /**
+   * POST /api/routes/details/{routeDetailId}/images/upload
+   */
+  uploadRouteDetailImages: async (pathParams: { routeDetailId: number }, files: File[]): Promise<RouteDetailResponse> => {
+    const formData = new FormData();
+    files.forEach((f) => formData.append("files", f));
+    const token = document.cookie
+      .split("; ")
+      .find((r) => r.startsWith("token="))
+      ?.split("=")[1];
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/routes/details/${pathParams.routeDetailId}/images/upload`,
+      {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      }
+    );
+    if (!res.ok) {
+      const msg = await res.text().catch(() => "Upload failed");
+      throw new Error(msg);
+    }
+    return res.json() as Promise<RouteDetailResponse>;
+  },
+
+  /**
+   * GET /api/routes/details/{routeDetailId}
+   */
+  getRouteDetail: async (pathParams: { routeDetailId: number }): Promise<RouteDetailResponse> => {
+    const { data, error } = await apiClient.GET("/api/routes/details/{routeDetailId}" as any, { params: { path: pathParams } });
+    if (error) throw error;
+    return data as RouteDetailResponse;
   },
 
 };
